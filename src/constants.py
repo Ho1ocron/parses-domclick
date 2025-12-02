@@ -5,3 +5,39 @@ HEADERS = {
     "Accept-Encoding": "gzip, deflate, br",
     "Connection": "keep-alive",
 }
+
+META_PAYLOAD = {
+  "jsonQuery": {
+    "_type": "commercialsale",
+    "engine_version": {
+      "type": "term",
+      "value": 2
+    },
+    "office_type": {
+      "type": "terms",
+      "value": [
+        1
+      ]
+    },
+    "price": {
+      "type": "range",
+      "value": {
+        "gte": 1000000,
+        "lte": 100000000
+      }
+    },
+    "total_area": {
+      "type": "range",
+      "value": {
+        "gte": 10,
+        "lte": 10000
+      }
+    },
+    "region": {
+      "type": "terms",
+      "value": [
+        4743
+      ]
+    }
+  }
+}
