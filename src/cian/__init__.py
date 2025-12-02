@@ -1,1 +1,1 @@
-from cian import CianParser
+from cian.cian import CianParser
