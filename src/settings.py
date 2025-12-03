@@ -10,11 +10,11 @@ class Settings(BaseSettings):
     )
 
     DEBUG: bool = Field(default=False, alias="DEBUG")
-    _API_URL: str = Field(default="", alias="API_URL")
+    META_API_URL: str = Field(default="", alias="API_URL")
 
     @property
-    def API_URL(self):
-        return self._API_URL
+    def API_URL(self) -> str:
+        return self.META_API_URL
     
 
 settings = Settings()

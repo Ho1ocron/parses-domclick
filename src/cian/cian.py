@@ -1,12 +1,13 @@
 from httpx import AsyncClient, Response
 from asyncio import Lock
+from time import sleep
 
 from settings import settings
 from constants import HEADERS
 
 
 class CianParser:
-    API_URL = settings.API_URL
+    API_URL = settings.META_API_URL
     FULL_URL: str
     content: str
     DEBUG = settings.DEBUG
@@ -29,7 +30,7 @@ class CianParser:
                     print(f"Request Payload: {self.META_PAYLOAD}")
                     print(f"Response Status Code: {response.status_code}")
                     print(f"Response Body: {response.text}")
-                response.raise_for_status()
+                # response.raise_for_status()
                 content = response.json()
                 self.FULL_URL = content["data"]["fullURL"]
         
@@ -48,7 +49,9 @@ class CianParser:
     
     async def page_parser(self) -> None:
         await self.get_suggestions_url()
+        sleep(5)
         await self.get_suggestions()
 
-    async def parse(self) -> None:...
+    async def parse(self) -> None:
+        await self.page_parser()
 
