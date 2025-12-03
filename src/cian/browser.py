@@ -52,7 +52,7 @@ class CianBrowser:
     def search(self, query: str) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {query}")
         offers: list[Offer] = []
-        self.open_page("https://cian.ru/")
+        self.open_page("https://www.cian.ru/")
         # search_field = WebDriverWait(self.driver, 3).until(
         #     EC.presence_of_element_located(
         #         (By.XPATH, "//input[@placeholder='Поиск по объявлениям']"))
