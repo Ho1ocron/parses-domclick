@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium_recaptcha_solver import RecaptchaSolver
 
 import time
 import html
@@ -11,17 +12,21 @@ import json
 import httpx
 import logging
 
-from cian.models import Offer
+from models import Offer
 
 class CianBrowser:
     logger: logging.Logger
     driver: webdriver.Chrome
+    test_ua: str
+    solver: RecaptchaSolver
 
-    def __init__(self, headless: bool = True) -> None:
+    def __init__(self, headless: bool = False) -> None:
         self.logger = logging.getLogger(__name__)
+        self.test_ua = "Mozilla/5.0 (Windows NT 4.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36"
 
         options = Options()
-        options.add_argument('--user-agent=Mozilla/5.0 (iPhone; CPU iPhone OS 10_3 like Mac OS X) AppleWebKit/602.1.50 (KHTML, like Gecko) CriOS/56.0.2924.75 Mobile/14E5239e Safari/602.1')
+        options.add_argument(f"'--user-agent={self.test_ua}")
+        options.add_argument('--window-size=1920,1080')
         options.add_argument('--start-maximized')
         if headless:
             options.add_argument('--headless')
@@ -30,40 +35,53 @@ class CianBrowser:
         except Exception as e:
             self.logger.error(f"Failed to initialize Chrome WebDriver: {e}")
             raise
+
+        self.solver = RecaptchaSolver(driver=self.driver)
         self.logger.info("Chrome WebDriver initialized successfully.")
 
-    async def quit(self) -> None:
+    def quit(self) -> None:
         self.driver.quit()
         self.logger.info("Browser session quit.")
         
-    async def open_page(self, url: str) -> None:
+    def open_page(self, url: str) -> None:
         """Open a page and handle potential antibot."""
         self.logger.info(f"Opening page: {url}")
         self.driver.get(url)
-        await self.bypass_antibot()
+        self.bypass_antibot()
 
-    async def search(self, query: str) -> list[Offer]:
+    def search(self, query: str) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {query}")
         offers: list[Offer] = []
-        search_field = WebDriverWait(self.driver, 3).until(
-            EC.presence_of_element_located(
-                (By.XPATH, "//input[@placeholder='Поиск по объявлениям']"))
-        )
+        self.open_page("https://cian.ru/")
+        # search_field = WebDriverWait(self.driver, 3).until(
+        #     EC.presence_of_element_located(
+        #         (By.XPATH, "//input[@placeholder='Поиск по объявлениям']"))
+        # )
+        try:
+            button = WebDriverWait(self.driver, 5).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "a[data-mark='FiltersSearchButton'"))
+                # Alternatively, use the CSS selector from the previous suggestion:
+                # EC.element_to_be_clickable((By.CSS_SELECTOR, 'a[data-mark="FiltersSearchButton"]'))
+            )
+            self.logger.info(f"button {button.id} is cliked")
+            button.click()
+        except:
+            current_title = self.driver.title
+            print(current_title)
 
-        button = WebDriverWait(self.driver, 5).until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, "a[data-mark='FiltersSearchButton']"))
-        )
-        # button.click()
-
+        
+        
         return offers
 
-    async def bypass_antibot(self) -> None:
+    def bypass_antibot(self) -> None:
         for _ in range(5):  # Retry up to 5 times
-            if self.driver.title == 'Доступ ограничен: проблема с IP':
+            if self.driver.title == 'Captcha - база объявлений ЦИАН':
                 self.logger.warning(
                     "Access restricted due to IP issues. Refreshing the page to bypass antibot.")
                 time.sleep(3)
                 self.driver.refresh()
+                recaptcha_iframe = self.driver.find_element(By.XPATH, '//iframe[@title="reCAPTCHA"]')
+                self.solver.click_recaptcha_v2(iframe=recaptcha_iframe)
             else:
                 break
         else:
@@ -75,14 +93,15 @@ class CianBrowser:
         self.driver.execute_script("window.localStorage.clear();")
         self.driver.execute_script("window.sessionStorage.clear();")
         self.driver.refresh()
-        await self.bypass_antibot()
+        # await self.bypass_antibot()
         self.logger.info("Browser session reset.")
 
 
-async def main() -> None:
+def main() -> None:
     browser = CianBrowser()
+    lst: list[Offer] = browser.search(query="")
 
 
 if __name__ == "__main__":
     import asyncio
-    asyncio.run(main())
+    main()
