@@ -57,8 +57,11 @@ class CianBrowser:
         )
         button.click()
 
-    def _input_data(self, selector: str, by: str = By.XPATH, tiimeout: int = 5) -> None:
-        ...
+    def _input_data(self, data: str, selector: str, by: str = By.XPATH, timeout: int = 5) -> None:
+        input_field = WebDriverWait(self.driver, timeout).until(
+            EC.element_to_be_clickable((by, selector))
+        )
+        input_field.send_keys(data)
 
     def search(self, query: str) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {query}")
@@ -76,9 +79,11 @@ class CianBrowser:
 
         # Selection price range
         self._click_button("div[data-mark='FilterPrice'] button", By.CSS_SELECTOR)
+        self._input_data(data="", selector="", by="")
 
         # Selectin area range
         self._click_button("div[data-mark='FilterArea'] button", By.CSS_SELECTOR)
+        self._input_data(data="", selector="", by="")
 
         return offers
 
