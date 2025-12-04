@@ -95,7 +95,6 @@ class CianBrowser:
         self.driver.execute_script("window.localStorage.clear();")
         self.driver.execute_script("window.sessionStorage.clear();")
         self.driver.refresh()
-        # await self.bypass_antibot(url)
         self.logger.info("Browser session reset.")
 
 
