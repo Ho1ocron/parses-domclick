@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
@@ -62,8 +63,10 @@ class CianBrowser:
             EC.element_to_be_clickable((by, selector))
         )
         input_field.send_keys(data)
+        time.sleep(2)
+        input_field.send_keys(Keys.ENTER)
 
-    def search(self, query: str) -> list[Offer]:
+    def search(self, query: str, price_gte: str, price_lte: str, area_gte: str, area_lte: str) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {query}")
         offers: list[Offer] = []
         self.open_page("https://www.cian.ru/")
@@ -74,16 +77,34 @@ class CianBrowser:
 
         # Selecting type to rend/office
         self._click_button("a[href='/snyat/']", By.CSS_SELECTOR)
+        time.sleep(random.randint(1, 3))
         self._click_button("div[data-mark='FilterOfferType'] button", By.CSS_SELECTOR)
+        time.sleep(random.randint(1, 3))
         self._click_button("//label[.//span[text()='Коммерческая']]")
 
-        # Selection price range
+        # Selecting price range
         self._click_button("div[data-mark='FilterPrice'] button", By.CSS_SELECTOR)
-        self._input_data(data="", selector="", by="")
+        self._input_data(data=price_gte, selector="//input[@placeholder='от']")
+        time.sleep(random.randint(1, 3))
+        self._input_data(data=price_lte, selector="//input[@placeholder='до']")
+        time.sleep(random.randint(1, 3))
 
-        # Selectin area range
+        # Selecting City, street, etc
+        time.sleep(random.randint(1, 3))
+        self._input_data(data=query, selector="//input[@id='geo-suggest-input']")
+        time.sleep(5)
+
+        # Selecting area range
         self._click_button("div[data-mark='FilterArea'] button", By.CSS_SELECTOR)
-        self._input_data(data="", selector="", by="")
+        time.sleep(random.randint(1, 3))
+        self._input_data(data=area_gte, selector="//input[@placeholder='от']")
+        time.sleep(random.randint(1, 3))
+        self._input_data(data=area_lte, selector="//input[@placeholder='до']")
+
+        # Submitting data
+        time.sleep(random.randint(1, 3))
+        self._click_button(selector="Найти", by=By.LINK_TEXT, timeout=20)
+        
 
         return offers
 
@@ -117,7 +138,13 @@ class CianBrowser:
 def main() -> None:
     time.sleep(3)
     browser = CianBrowser(headless=False)
-    lst: list[Offer] = browser.search(query="")
+    lst: list[Offer] = browser.search (
+        query="Москва",
+        price_gte="10",
+        price_lte="10000000",
+        area_gte="10",
+        area_lte="10000",
+    )
     print("Done")
     input()
 
