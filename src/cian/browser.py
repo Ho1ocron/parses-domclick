@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium_recaptcha_solver import RecaptchaSolver
+# from selenium_recaptcha_solver import RecaptchaSolver
 
 import time
 import html
@@ -37,50 +37,49 @@ class CianBrowser:
             self.logger.error(f"Failed to initialize Chrome WebDriver: {e}")
             raise
 
-        self.solver = RecaptchaSolver(driver=self.driver)
+        # self.solver = RecaptchaSolver(driver=self.driver)
         self.logger.info("Chrome WebDriver initialized successfully.")
 
-    async def quit(self) -> None:
+    def quit(self) -> None:
         self.driver.quit()
         self.logger.info("Browser session quit.")
         
-    async def open_page(self, url: str) -> None:
+    def open_page(self, url: str) -> None:
         """Open a page and handle potential antibot."""
         self.logger.info(f"Opening page: {url}")
         self.driver.get(url)
-        await self.bypass_antibot(url)
+        self.bypass_antibot(url)
 
-    async def search(self, query: str) -> list[Offer]:
+    def _click_button(self, selector: str, by: str = By.XPATH, timeout: int = 5) -> None:
+        button = WebDriverWait(self.driver, timeout).until(
+            EC.element_to_be_clickable((by, selector))
+        )
+        button.click()
+
+    def search(self, query: str) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {query}")
         offers: list[Offer] = []
-        await self.open_page("https://www.cian.ru/")
+        self.open_page("https://www.cian.ru/")
+        
         self.logger.info("bypassed captcha! Procced to find the button")
+        
         time.sleep(random.randint(1, 10))
-        # search_field = WebDriverWait(self.driver, 3).until(
-        #     EC.presence_of_element_located(
-        #         (By.XPATH, "//input[@placeholder='Поиск по объявлениям']"))
-        # )
-        try:
-            print("Searching for button")
-            button = WebDriverWait(self.driver, 5).until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, "a[href='/snyat/']"))
-            )
 
-            # Do JS click because CIАН often eats normal Selenium clicks
-            self.driver.execute_script("arguments[0].click();", button)
-
-        except Exception as e:
-            print(f"button clicking exception: {e}")
+        self._click_button("a[href='/snyat/']", By.CSS_SELECTOR)
+        self._click_button("div[data-mark='FilterOfferType'] button", By.CSS_SELECTOR)
+        self._click_button("//label[.//span[text()='Коммерческая']]")
         
         return offers
 
-    async def bypass_antibot(self, url: str) -> None:
+    def bypass_antibot(self, url: str) -> None:
         for _ in range(5):  # Retry up to 5 times
             if self.driver.title == 'Captcha - база объявлений ЦИАН':
                 self.logger.warning(
                     "Access restricted due to IP issues. Refreshing the page to bypass antibot.")
                 time.sleep(3)
+                self.reset(url)
                 self.driver.get(url)
+                
                 # recaptcha_iframe = self.driver.find_element(By.XPATH, '//iframe[@title="reCAPTCHA"]')
                 # self.solver.click_recaptcha_v2(iframe=recaptcha_iframe)
                 time.sleep(20)
@@ -91,22 +90,22 @@ class CianBrowser:
             self.logger.error("Access restricted due to IP issues.")
             raise Exception("Access restricted due to IP issues.")
 
-    async def reset(self, url: str) -> None:
+    def reset(self, url: str) -> None:
         self.driver.delete_all_cookies()
         self.driver.execute_script("window.localStorage.clear();")
         self.driver.execute_script("window.sessionStorage.clear();")
         self.driver.refresh()
-        await self.bypass_antibot(url)
+        # await self.bypass_antibot(url)
         self.logger.info("Browser session reset.")
 
 
-async def main() -> None:
+def main() -> None:
     time.sleep(3)
     browser = CianBrowser(headless=False)
-    lst: list[Offer] = await browser.search(query="")
+    lst: list[Offer] = browser.search(query="")
     print("Done")
+    input()
 
 
 if __name__ == "__main__":
-    from asyncio import run
-    run(main())
+    main()
