@@ -57,6 +57,9 @@ class CianBrowser:
         )
         button.click()
 
+    def _input_data(self, selector: str, by: str = By.XPATH, tiimeout: int = 5) -> None:
+        ...
+
     def search(self, query: str) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {query}")
         offers: list[Offer] = []
@@ -76,7 +79,7 @@ class CianBrowser:
 
         # Selectin area range
         self._click_button("div[data-mark='FilterArea'] button", By.CSS_SELECTOR)
-        
+
         return offers
 
     def bypass_antibot(self, url: str) -> None:
