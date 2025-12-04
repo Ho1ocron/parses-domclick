@@ -15,6 +15,7 @@ import random
 
 from models import Offer
 
+
 class CianBrowser:
     logger: logging.Logger
     driver: webdriver.Chrome
@@ -65,9 +66,16 @@ class CianBrowser:
         
         time.sleep(random.randint(1, 10))
 
+        # Selecting type to rend/office
         self._click_button("a[href='/snyat/']", By.CSS_SELECTOR)
         self._click_button("div[data-mark='FilterOfferType'] button", By.CSS_SELECTOR)
         self._click_button("//label[.//span[text()='Коммерческая']]")
+
+        # Selection price range
+        self._click_button("div[data-mark='FilterPrice'] button", By.CSS_SELECTOR)
+
+        # Selectin area range
+        self._click_button("div[data-mark='FilterArea'] button", By.CSS_SELECTOR)
         
         return offers
 
@@ -77,7 +85,7 @@ class CianBrowser:
                 self.logger.warning(
                     "Access restricted due to IP issues. Refreshing the page to bypass antibot.")
                 time.sleep(3)
-                self.reset(url)
+                self.reset()
                 self.driver.get(url)
                 
                 # recaptcha_iframe = self.driver.find_element(By.XPATH, '//iframe[@title="reCAPTCHA"]')
@@ -90,7 +98,7 @@ class CianBrowser:
             self.logger.error("Access restricted due to IP issues.")
             raise Exception("Access restricted due to IP issues.")
 
-    def reset(self, url: str) -> None:
+    def reset(self) -> None:
         self.driver.delete_all_cookies()
         self.driver.execute_script("window.localStorage.clear();")
         self.driver.execute_script("window.sessionStorage.clear();")
