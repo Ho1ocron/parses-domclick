@@ -4,6 +4,10 @@ from cian import CianParser
 from constants import META_PAYLOAD, HEADERS
 
 
+async def return_offers() -> None:
+    ...
+
+
 async def main():
     # TODO: Add main functionality here
     # TODO: add META_PAYLOAD serialized to parser
