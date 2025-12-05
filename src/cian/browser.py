@@ -1,3 +1,4 @@
+from typing import Any
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -13,6 +14,7 @@ import json
 import httpx
 import logging
 import random
+import os
 
 from models import Offer
 
@@ -21,6 +23,9 @@ class CianBrowser:
     logger: logging.Logger
     driver: webdriver.Chrome
     test_ua: str
+
+    PROJECT_ROOT: Any
+    DOWNLOAD_DIR: Any
     # solver: RecaptchaSolver
 
     def __init__(self, headless: bool = False) -> None:
@@ -31,6 +36,21 @@ class CianBrowser:
         options.add_argument(f"'--user-agent={self.test_ua}")
         options.add_argument('--window-size=1920,1080')
         options.add_argument('--start-maximized')
+        
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        self.DOWNLOAD_DIR = os.path.join(script_dir, "downloads")
+
+        if not os.path.exists(self.DOWNLOAD_DIR):
+            os.makedirs(self.DOWNLOAD_DIR)
+            
+        options.add_experimental_option("prefs", {
+            "download.default_directory": self.DOWNLOAD_DIR,
+            "download.prompt_for_download": False, # Отключает запрос подтверждения
+            "download.directory_upgrade": True,
+            "autoclick_on_safebrowsing_prompt": False, # Для безопасности
+            "safebrowsing.enabled": True 
+        })
+
         if headless:
             options.add_argument('--headless')
         try:
