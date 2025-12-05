@@ -63,8 +63,6 @@ class CianBrowser:
             EC.element_to_be_clickable((by, selector))
         )
         input_field.send_keys(data)
-        time.sleep(2)
-        input_field.send_keys(Keys.ENTER)
 
     def search(self, query: str, price_gte: str, price_lte: str, area_gte: str, area_lte: str) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {query}")
@@ -92,6 +90,10 @@ class CianBrowser:
         # Selecting City, street, etc
         time.sleep(random.randint(1, 3))
         self._input_data(data=query, selector="//input[@id='geo-suggest-input']")
+        city_xpath = f"//div/following-sibling::div"
+        time.sleep(random.randint(1, 2))
+        self._click_button(f"//span[@title='{query}']")
+
         time.sleep(5)
 
         # Selecting area range
@@ -139,7 +141,7 @@ def main() -> None:
     time.sleep(3)
     browser = CianBrowser(headless=False)
     lst: list[Offer] = browser.search (
-        query="Москва",
+        query="Санкт-Петербург",
         price_gte="10",
         price_lte="10000000",
         area_gte="10",
