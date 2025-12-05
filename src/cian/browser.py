@@ -106,6 +106,10 @@ class CianBrowser:
         # Submitting data
         time.sleep(random.randint(1, 3))
         self._click_button(selector="Найти", by=By.LINK_TEXT, timeout=20)
+
+        # Getting all offers in xlsx format
+        time.sleep(random.randint(1, 4))
+        self._click_button("//button[normalize-space()='Сохранить файл в Excel']", timeout=20)
         
 
         return offers
