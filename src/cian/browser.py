@@ -17,7 +17,7 @@ import logging
 import random
 import os
 
-from models import Offer
+from cian.models import Offer
 
 
 class CianBrowser:

@@ -5,8 +5,8 @@ from time import sleep
 
 import pandas as pd
 
-from src.cian.models import Offer
-from ..constants import HEADERS, COLUMN_MAP
+from cian.models import Offer
+from constants import HEADERS, COLUMN_MAP
 
 
 class CianParser:

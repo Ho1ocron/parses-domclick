@@ -1,3 +1,4 @@
+import time
 from asyncio import run
 
 from cian import CianParser, CianBrowser
@@ -5,6 +6,8 @@ from constants import META_PAYLOAD, HEADERS
 
 
 def main():    
+    from pprint import pprint
+    
     browser = CianBrowser()
     browser.search(
         query="Санкт-Петербург",
@@ -13,10 +16,10 @@ def main():
         area_gte="10",
         area_lte="10000",
     )
+    time.sleep(20)
     parser = CianParser(meta_payload=META_PAYLOAD)
     offers = parser.read_offers_from_file()
-
-    print(offers)
+    pprint(offers)
 
 
 if __name__ == "__main__":
