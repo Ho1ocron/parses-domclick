@@ -1,4 +1,5 @@
 from typing import Any
+from pathlib import Path
 from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -24,11 +25,12 @@ class CianBrowser:
     driver: webdriver.Chrome
     test_ua: str
 
-    PROJECT_ROOT: Any
-    DOWNLOAD_DIR: Any
+    DOWNLOAD_DIR: str
+    BASE_DIR: Path
     # solver: RecaptchaSolver
 
     def __init__(self, headless: bool = False) -> None:
+        self.BASE_DIR = Path(__file__).resolve().parent.parent.parent
         self.logger = logging.getLogger(__name__)
         self.test_ua = "Mozilla/5.0 (Windows NT 4.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36"
 
@@ -37,8 +39,7 @@ class CianBrowser:
         options.add_argument('--window-size=1920,1080')
         options.add_argument('--start-maximized')
         
-        script_dir = os.path.dirname(os.path.abspath(__file__))
-        self.DOWNLOAD_DIR = os.path.join(script_dir, "downloads")
+        self.DOWNLOAD_DIR = str(self.BASE_DIR / "downloads")
 
         if not os.path.exists(self.DOWNLOAD_DIR):
             os.makedirs(self.DOWNLOAD_DIR)
