@@ -41,3 +41,27 @@ META_PAYLOAD = {
     }
   }
 }
+
+COLUMN_MAP = {
+    "ID объявления": "listing_id",
+    "Тип": "type",
+    "Площадь": "area",
+    "Возможное назначение": "possible_purpose",
+    "Класс": "building_class",
+    "Метро": "metro",
+    "Адрес": "address",
+    "Здание": "building",
+    "Этаж": "floor",
+    "Высота потолков, м": "ceiling_height_m",
+    "Цена": "price",
+    "Тип аренды": "rent_type",
+    "Телефоны": "phones",
+    "Описание": "description",
+    "Парковка": "parking",
+    "Планировка": "layout",
+    "Вход": "entrance",
+    "Доступ": "access",
+    "Дополнительно": "additional",
+    "Лифт": "elevator",
+    "Ссылка на объявление": "listing_url",
+}
