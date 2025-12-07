@@ -24,4 +24,3 @@ class Offer(BaseModel):
     additional: Optional[str]
     elevator: Optional[str]
     listing_url: Optional[str]
-    

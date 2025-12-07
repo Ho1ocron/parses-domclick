@@ -43,7 +43,7 @@ META_PAYLOAD = {
 }
 
 COLUMN_MAP = {
-    "ID объявления": "listing_id",
+    "ID  объявления": "ID",
     "Тип": "type",
     "Площадь": "area",
     "Возможное назначение": "possible_purpose",

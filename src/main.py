@@ -1,35 +1,23 @@
 from asyncio import run
 
-from cian import CianParser
+from cian import CianParser, CianBrowser
 from constants import META_PAYLOAD, HEADERS
 
 
-async def return_offers() -> None:
-    ...
-
-
-async def main():
-    # TODO: Add main functionality here
-    # TODO: add META_PAYLOAD serialized to parser
-
-    parser = CianParser(meta_payload=META_PAYLOAD)
-    await parser.parse()
-    print(f"CianParser initialized with API_URL: {parser.API_URL} and DEBUG: {parser.DEBUG}")
-
-
-def test_api():
-    import requests
-    response = requests.post(
-        url="https://api.cian.ru/search-offers-index/v2/get-meta/",
-        json=META_PAYLOAD,
-        headers=HEADERS,
-        proxies={
-            "117.250.3.58": "8080"
-        }
+def main():    
+    browser = CianBrowser()
+    browser.search(
+        query="Санкт-Петербург",
+        price_gte="1000000",
+        price_lte="100000000",
+        area_gte="10",
+        area_lte="10000",
     )
-    print(response.status_code)
-    print(response.text)
+    parser = CianParser(meta_payload=META_PAYLOAD)
+    offers = parser.read_offers_from_file()
+
+    print(offers)
+
 
 if __name__ == "__main__":
-    test_api()
-    # run(main())
+    main()

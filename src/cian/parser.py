@@ -24,35 +24,27 @@ class CianParser:
         self.META_PAYLOAD = meta_payload
         self.BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-    def read_offers_from_file(self) -> None:
+    def read_offers_from_file(self) -> dict[int, dict[str, str]]:
         offers_path = self.BASE_DIR / "downloads" / "offers.xlsx"
-
-        self.dataframe = pd.read_excel(offers_path)
-        self.dataframe.columns = self.dataframe.columns.str.strip()
+        dataframe = pd.read_excel(offers_path)
+        dataframe.iterrows()
+        dataframe.columns = dataframe.columns.str.strip()
+        dataframe = dataframe.rename(columns=COLUMN_MAP)
+        dataframe = dataframe.replace({pd.NA: None})    
         
-    def serialize_offers(self) -> None:
-        self.dataframe = self.dataframe.rename(columns=COLUMN_MAP)
-        self.dataframe = self.dataframe.where(pd.notnull(self.dataframe), None)
-        self.records = []
+        output_dict = {}
 
-        for _, row in self.dataframe.iterrows():
-            try:
-                record = Offer(**row.to_dict())
-                self.records.append(record.model_dump())
-            except Exception as e:
-                print(f"Error serializing row {row}: {e}")
-                continue
-    
-    def get_offers(self) -> list[Offer]:
-        self.read_offers_from_file()
-        self.serialize_offers()
-        return self.records 
+        for _, row in dataframe.iterrows():
+            main_key = row.iloc[0]
+            inner_dict = row.iloc[1:].to_dict()
+            output_dict[main_key] = inner_dict
+
+        return output_dict
 
 
 if __name__ == "__main__":
     parser = CianParser(meta_payload={})
-    parser.read_offers_from_file()
-    offers = parser.serialize_offers()
-    print(offers)
+    from pprint import pprint
+    pprint(parser.read_offers_from_file())
 
 
