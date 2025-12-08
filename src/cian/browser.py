@@ -22,14 +22,14 @@ from cian.models import Offer
 
 class CianBrowser:
     logger: logging.Logger
-    driver: webdriver.Chrome
+    driver: webdriver.Chrome | webdriver.Remote
     test_ua: str
 
     DOWNLOAD_DIR: str
     BASE_DIR: Path
     # solver: RecaptchaSolver
 
-    def __init__(self, headless: bool = False) -> None:
+    def __init__(self, headless: bool = False, command_executor: str | None = None) -> None:
         self.BASE_DIR = Path(__file__).resolve().parent.parent.parent
         self.logger = logging.getLogger(__name__)
         self.test_ua = "Mozilla/5.0 (Windows NT 4.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36"
@@ -55,7 +55,10 @@ class CianBrowser:
         if headless:
             options.add_argument('--headless')
         try:
-            self.driver = webdriver.Chrome(options=options)
+            if command_executor:
+                self.driver = webdriver.Remote(command_executor=command_executor, options=options)
+            else:
+                self.driver = webdriver.Chrome(options=options)
         except Exception as e:
             self.logger.error(f"Failed to initialize Chrome WebDriver: {e}")
             raise
@@ -160,6 +163,26 @@ class CianBrowser:
         self.driver.execute_script("window.sessionStorage.clear();")
         self.driver.refresh()
         self.logger.info("Browser session reset.")
+
+    @property
+    def httpx_client(self) -> httpx.Client:
+        """Extract session data from Selenium browser for httpx client."""
+
+        session = httpx.Client()
+        session.cookies.update(
+            {cookie['name']: cookie['value'] for cookie in self.driver.get_cookies()})
+        session.headers.update({
+            'User-Agent': self.driver.execute_script('return navigator.userAgent')
+        })
+        self.logger.debug(f"Session cookies: {session.cookies}")
+        self.logger.debug(f"Session headers: {session.headers}")
+        return session
+    
+    def get_new_session(self):
+        """Get a new httpx session with fresh cookies."""
+        self.reset()
+        self.logger.debug("Got a new HTTPX session with fresh cookies.")
+        return self.httpx_client
 
 
 def main() -> None:
