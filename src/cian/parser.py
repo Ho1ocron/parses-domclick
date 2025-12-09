@@ -25,6 +25,7 @@ class CianParser:
         self.BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
     def read_offers_from_file(self) -> dict[int, dict[str, str]]:
+        sleep(10)
         offers_path = self.BASE_DIR / "downloads" / "offers.xlsx"
         dataframe = pd.read_excel(offers_path)
         dataframe.iterrows()

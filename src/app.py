@@ -100,7 +100,7 @@ async def search_offers(request: SearchRequest) -> SearchResponse:
 
         logger.info(f"Found {len(offers)} offers")
 
-        return SearchResponse(offers=offers)
+        return SearchResponse(offers=offers, query=request.query, total_found=int(len(offers)), filtered_count=len(offers))
 
     except Exception as e:
         logger.error(f"Error during search: {e}")
