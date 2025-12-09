@@ -26,13 +26,13 @@ async def lifespan(app: FastAPI):
     logger.info("Starting CianParser lifespan...")
 
     # Wait until Selenium is ready
-    while not is_selenium_ready(
-        host=settings.SELENIUM_HOST,
-        port=settings.SELENIUM_PORT,
-        timeout=60
-    ):
-        logger.info("Waiting for Selenium server...")
-        time.sleep(1)
+    # while not is_selenium_ready(
+    #     host=settings.SELENIUM_HOST,
+    #     port=settings.SELENIUM_PORT,
+    #     timeout=60
+    # ):
+    #     logger.info("Waiting for Selenium server...")
+    #     time.sleep(1)
 
     # Initialize browser
     browser = CianBrowser(
