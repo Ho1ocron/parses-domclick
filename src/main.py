@@ -9,13 +9,13 @@ def main():
     from pprint import pprint
     
     browser = CianBrowser()
-    browser.search(
-        query="Санкт-Петербург",
-        price_gte="1000000",
-        price_lte="100000000",
-        area_gte="10",
-        area_lte="10000",
-    )
+    # browser.search(
+    #     query="Санкт-Петербург",
+    #     price_gte="1000000",
+    #     price_lte="100000000",
+    #     area_gte="10",
+    #     area_lte="10000",
+    # )
     time.sleep(20)
     parser = CianParser(meta_payload=META_PAYLOAD)
     offers = parser.read_offers_from_file()

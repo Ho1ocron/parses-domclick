@@ -17,7 +17,7 @@ import logging
 import random
 import os
 
-from cian.models import Offer
+from src.cian.models import Offer
 
 
 class CianBrowser:
@@ -35,7 +35,7 @@ class CianBrowser:
         self.test_ua = "Mozilla/5.0 (Windows NT 4.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36"
 
         options = Options()
-        options.add_argument(f"'--user-agent={self.test_ua}")
+        options.add_argument(f"--user-agent={self.test_ua}")
         options.add_argument('--window-size=1920,1080')
         options.add_argument('--start-maximized')
         
@@ -57,6 +57,7 @@ class CianBrowser:
         try:
             if command_executor:
                 self.driver = webdriver.Remote(command_executor=command_executor, options=options)
+                # self.driver = webdriver.Chrome(options=options)
             else:
                 self.driver = webdriver.Chrome(options=options)
         except Exception as e:
@@ -159,8 +160,12 @@ class CianBrowser:
 
     def reset(self) -> None:
         self.driver.delete_all_cookies()
-        self.driver.execute_script("window.localStorage.clear();")
-        self.driver.execute_script("window.sessionStorage.clear();")
+        try:
+            # Only works if page is HTTP(S); won't fail for normal URLs
+            self.driver.execute_script("window.localStorage.clear();")
+            self.driver.execute_script("window.sessionStorage.clear();")
+        except Exception as e:
+            self.logger.warning(f"Failed to clear storage: {e}")
         self.driver.refresh()
         self.logger.info("Browser session reset.")
 

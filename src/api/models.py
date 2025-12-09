@@ -14,7 +14,7 @@ class SearchRequest(BaseModel):
 class SearchResponse(BaseModel):
     """Response model for search endpoint."""
 
-    query: str
-    total_found: int
-    filtered_count: int
+    query: str | None = None
+    total_found: int | None = None
+    filtered_count: int | None = None
     offers: dict[int, dict[str, str]]

@@ -1,2 +1,2 @@
-from cian.parser import CianParser
-from cian.browser import CianBrowser
+from src.cian.parser import CianParser
+from src.cian.browser import CianBrowser
