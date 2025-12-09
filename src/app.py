@@ -1,29 +1,15 @@
 import logging
-import os
 import sys
 import time
-from contextlib import asynccontextmanager
-from typing import Optional
 
-from dotenv import load_dotenv
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 
 from src.api.models import SearchRequest, SearchResponse
-from src.api.self_api import except_hook
+from src.api.self_api import except_hook, is_selenium_ready
 from src.cian.browser import CianBrowser
 from src.cian.parser import CianParser
-from src.settings import settings
-
-import logging
-import time
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, HTTPException
-
-from src.api.models import SearchRequest, SearchResponse
-from src.api.self_api import except_hook
-from src.cian.browser import CianBrowser
 from src.settings import settings
 
 
@@ -40,18 +26,18 @@ async def lifespan(app: FastAPI):
     logger.info("Starting CianParser lifespan...")
 
     # Wait until Selenium is ready
-    # while not is_selenium_ready(
-    #     host=settings.SELENIUM_HOST,
-    #     port=settings.SELENIUM_PORT,
-    #     timeout=60
-    # ):
-    #     logger.info("Waiting for Selenium server...")
-    #     time.sleep(1)
+    while not is_selenium_ready(
+        host=settings.SELENIUM_HOST,
+        port=settings.SELENIUM_PORT,
+        timeout=60
+    ):
+        logger.info("Waiting for Selenium server...")
+        time.sleep(1)
 
     # Initialize browser
     browser = CianBrowser(
         headless=False,
-        command_executor=f"http://192.168.1.36:4444/wd/hub",
+        command_executor=f"http://{settings.SELENIUM_HOST}:{settings.SELENIUM_PORT}/wd/hub",
     )
 
     logger.info("CianParser lifespan started.")

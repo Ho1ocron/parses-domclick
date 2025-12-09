@@ -23,9 +23,14 @@ class Settings(BaseSettings):
         return self.S_SELENIUM_HOST
 
     @property
-    def SELENIUM_PORT(self) -> str:
-        return f"{self.SELENIUM_HOST}:{self.S_SELENIUM_PORT}"
+    def SELENIUM_PORT(self) -> int:
+        return self.S_SELENIUM_PORT
     
 
 settings = Settings()
 
+
+if __name__ == "__main__":
+    print(settings.API_URL)
+    print(settings.SELENIUM_HOST)
+    print(settings.SELENIUM_PORT)

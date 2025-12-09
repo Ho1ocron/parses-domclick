@@ -8,8 +8,6 @@ import httpx
 def is_selenium_ready(host, port, timeout=60):
     
     url = f"http://{host}:{port}/wd/hub/status"
-    url = f"http://{host}:4444/status"
-    url = "http://192.168.1.36:4444/status"
     try:
         r: dict[str, dict] = httpx.get(url).json()
         print(r)
