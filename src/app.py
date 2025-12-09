@@ -51,7 +51,7 @@ async def lifespan(app: FastAPI):
     # Initialize browser
     browser = CianBrowser(
         headless=False,
-        command_executor=f"http://192.168.1.36:4444/wd/hub",
+        # command_executor=f"http://192.168.1.36:4444/wd/hub",
     )
 
     logger.info("CianParser lifespan started.")
