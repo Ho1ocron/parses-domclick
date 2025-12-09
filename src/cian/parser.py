@@ -24,6 +24,7 @@ class CianParser:
         self.META_PAYLOAD = meta_payload
         self.BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
+    # TODO: добавить получение данных на вход, а не чтение файла здесь и сейчас.
     def read_offers_from_file(self) -> dict[int, dict[str, str]]:
         sleep(10)
         offers_path = self.BASE_DIR / "downloads" / "offers.xlsx"
@@ -39,7 +40,6 @@ class CianParser:
             main_key = row.iloc[0]
             inner_dict = row.iloc[1:].to_dict()
             output_dict[main_key] = inner_dict
-
         return output_dict
 
 
