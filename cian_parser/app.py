@@ -1,8 +1,9 @@
 import logging
+import os
 import sys
-import time
-
 from contextlib import asynccontextmanager
+
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 
@@ -10,10 +11,15 @@ from cian_parser.api.models import SearchRequest, SearchResponse
 from cian_parser.api.self_api import except_hook, is_selenium_ready
 from cian_parser.cian.browser import CianBrowser
 from cian_parser.cian.parser import CianParser
-from cian_parser.settings import settings
 
+# Load environment variables
+load_dotenv()
+SELENIUM_HOST = os.getenv("SELENIUM_HOST", "localhost")
+SELENIUM_PORT = int(os.getenv("SELENIUM_PORT", 4444))
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-logging.basicConfig(level=logging.INFO)
+# Setup logging
+logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
 logger = logging.getLogger("cian_parser")
 browser: CianBrowser | None = None
 sys.excepthook = except_hook
@@ -37,7 +43,7 @@ async def lifespan(app: FastAPI):
     # Initialize browser
     browser = CianBrowser(
         headless=False,
-        command_executor=f"http://{settings.SELENIUM_HOST}:{settings.SELENIUM_PORT}/wd/hub",
+        command_executor=f"http://{SELENIUM_HOST}:{SELENIUM_PORT}/wd/hub",
     )
 
     logger.info("CianParser lifespan started.")
@@ -86,12 +92,17 @@ async def search_offers(request: SearchRequest) -> SearchResponse:
 
         logger.info(f"Found {len(offers)} offers")
 
-        return SearchResponse(offers=offers, query=request.query, total_found=int(len(offers)), filtered_count=len(offers))
+        return SearchResponse(
+            offers=offers,
+            query=request.query,
+            total_found=int(len(offers)),
+            filtered_count=len(offers),
+        )
 
     except Exception as e:
         logger.error(f"Error during search: {e}")
         raise HTTPException(status_code=500, detail="Error during search")
-    
+
 
 @app.get("/")
 async def root():
@@ -107,10 +118,8 @@ async def root():
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "browser_initialized": browser is not None}
-    
+
 
 @app.get("/test")
 async def test_page():
     return HTMLResponse("<html><body><h1>Hello</h1></body></html>")
-
-# Now localStorage works
