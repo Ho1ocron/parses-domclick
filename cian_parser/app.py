@@ -6,11 +6,11 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 
-from src.api.models import SearchRequest, SearchResponse
-from src.api.self_api import except_hook, is_selenium_ready
-from src.cian.browser import CianBrowser
-from src.cian.parser import CianParser
-from src.settings import settings
+from cian_parser.api.models import SearchRequest, SearchResponse
+from cian_parser.api.self_api import except_hook, is_selenium_ready
+from cian_parser.cian.browser import CianBrowser
+from cian_parser.cian.parser import CianParser
+from cian_parser.settings import settings
 
 
 logging.basicConfig(level=logging.INFO)

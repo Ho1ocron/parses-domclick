@@ -10,14 +10,9 @@ class Settings(BaseSettings):
     )
 
     DEBUG: bool = Field(default=False, alias="DEBUG")
-    APP_API_URL: str = Field(default="", alias="API_URL")
     S_SELENIUM_HOST: str = Field(default="localhost", alias="SELENIUM_HOST")
     S_SELENIUM_PORT: int = Field(default=4444, alias="SELENIUM_PORT")
 
-    @property
-    def API_URL(self) -> str:
-        return self.APP_API_URL
-    
     @property
     def SELENIUM_HOST(self) -> str:
         return self.S_SELENIUM_HOST
@@ -31,6 +26,5 @@ settings = Settings()
 
 
 if __name__ == "__main__":
-    print(settings.API_URL)
     print(settings.SELENIUM_HOST)
     print(settings.SELENIUM_PORT)
