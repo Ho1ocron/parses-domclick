@@ -1,0 +1,19 @@
+services:
+  cian-parser:
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    depends_on:
+      - selenium-server
+    ports:
+      - "8000:8000"
+    environment:
+      - SELENIUM_HOST=selenium-server
+      - SELENIUM_PORT=4444
+      - SELENIUM_TIMEOUT=10
+
+  selenium-server:
+    image: selenium/standalone-chrome:latest
+    shm_size: 2gb
+    ports:
+      - "4444:4444"
