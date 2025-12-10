@@ -10,7 +10,6 @@ from fastapi.responses import HTMLResponse
 from cian_parser.api.models import SearchRequest, SearchResponse
 from cian_parser.api.self_api import except_hook, is_selenium_ready
 from cian_parser.cian.browser import CianBrowser
-from cian_parser.cian.parser import CianParser
 
 # Load environment variables
 load_dotenv()
@@ -77,24 +76,22 @@ async def search_offers(request: SearchRequest) -> SearchResponse:
     try:
         # Reset browser and fetch final offers
         browser.reset()
-        logger.info(f"Searching for: {request.query}")
+        logger.info(f"Searching for: {request.city}")
 
-        browser.search(
-            request.query,
+        offers = browser.search(
+            request.city,
             request.price_gte,
             request.price_lte,
             request.area_gte,
             request.area_lte,
+            request.sale,
         )
-
-        parser = CianParser({})
-        offers = parser.read_offers_from_file()
 
         logger.info(f"Found {len(offers)} offers")
 
         return SearchResponse(
             offers=offers,
-            query=request.query,
+            query=request.city,
             total_found=int(len(offers)),
             filtered_count=len(offers),
         )
@@ -108,7 +105,7 @@ async def search_offers(request: SearchRequest) -> SearchResponse:
 async def root():
     """Root endpoint with API information."""
     return {
-        "name": "Avito Parser API",
+        "name": "Cian Parser API",
         "version": "1.0.0",
         "endpoints": {"POST /search": "Search for offers with filters"},
     }
@@ -118,8 +115,3 @@ async def root():
 async def health_check():
     """Health check endpoint."""
     return {"status": "healthy", "browser_initialized": browser is not None}
-
-
-@app.get("/test")
-async def test_page():
-    return HTMLResponse("<html><body><h1>Hello</h1></body></html>")

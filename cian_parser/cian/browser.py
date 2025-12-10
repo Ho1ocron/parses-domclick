@@ -1,158 +1,133 @@
-from typing import Any
-from pathlib import Path
-from bs4 import BeautifulSoup
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-# from selenium_recaptcha_solver import RecaptchaSolver
-
-import time
-import html
-import json
-import httpx
+import io
 import logging
-import random
-import os
+import time
+from typing import Optional
+from urllib.parse import urlencode
 
-from cian_parser.cian.models import Offer
+import httpx
+import pandas as pd
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.remote.webdriver import WebDriver
+
+from cian_parser.constants import CITIES, COLUMN_MAP, HEADERS
 
 
 class CianBrowser:
     logger: logging.Logger
-    driver: webdriver.Chrome | webdriver.Remote
-    test_ua: str
+    driver: WebDriver
 
-    DOWNLOAD_DIR: str
-    BASE_DIR: Path
-    # solver: RecaptchaSolver
-
-    def __init__(self, headless: bool = False, command_executor: str | None = None) -> None:
-        self.BASE_DIR = Path(__file__).resolve().parent.parent.parent
+    def __init__(
+        self, headless: bool = False, command_executor: Optional[str] = None
+    ) -> None:
         self.logger = logging.getLogger(__name__)
-        self.test_ua = "Mozilla/5.0 (Windows NT 4.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/37.0.2049.0 Safari/537.36"
 
         options = Options()
-        options.add_argument(f"--user-agent={self.test_ua}")
-        options.add_argument('--window-size=1920,1080')
-        options.add_argument('--start-maximized')
-        
-        self.DOWNLOAD_DIR = str(self.BASE_DIR / "downloads")
-
-        if not os.path.exists(self.DOWNLOAD_DIR):
-            os.makedirs(self.DOWNLOAD_DIR)
-            
-        options.add_experimental_option("prefs", {
-            "download.default_directory": self.DOWNLOAD_DIR,
-            "download.prompt_for_download": False, # Отключает запрос подтверждения
-            "download.directory_upgrade": True,
-            "autoclick_on_safebrowsing_prompt": False, # Для безопасности
-            "safebrowsing.enabled": True 
-        })
+        options.add_argument(f"--user-agent={HEADERS['User-Agent']}")
+        options.add_argument("--window-size=1920,1080")
+        options.add_argument("--start-maximized")
 
         if headless:
-            options.add_argument('--headless')
+            options.add_argument("--headless")
+
         try:
             if command_executor:
-                self.driver = webdriver.Remote(command_executor=command_executor, options=options)
-                # self.driver = webdriver.Chrome(options=options)
+                self.driver = webdriver.Remote(
+                    command_executor=command_executor, options=options
+                )
             else:
                 self.driver = webdriver.Chrome(options=options)
         except Exception as e:
             self.logger.error(f"Failed to initialize Chrome WebDriver: {e}")
             raise
 
-        # self.solver = RecaptchaSolver(driver=self.driver)
         self.logger.info("Chrome WebDriver initialized successfully.")
 
     def quit(self) -> None:
         self.driver.quit()
         self.logger.info("Browser session quit.")
-        
+
     def open_page(self, url: str) -> None:
         """Open a page and handle potential antibot."""
         self.logger.info(f"Opening page: {url}")
         self.driver.get(url)
         self.bypass_antibot(url)
 
-    def _click_button(self, selector: str, by: str = By.XPATH, timeout: int = 5) -> None:
-        button = WebDriverWait(self.driver, timeout).until(
-            EC.element_to_be_clickable((by, selector))
-        )
-        button.click()
+    def _construct_url(
+        self,
+        region: str,
+        price_gte: Optional[str],
+        price_lte: Optional[str],
+        area_gte: Optional[str],
+        area_lte: Optional[str],
+        sale: Optional[bool],
+    ) -> str:
+        base_url = "https://www.cian.ru/export/xls/offers/"
+        params = {
+            "currency": 2,
+            "deal_type": "rent" if not sale else "sale",
+            "engine_version": 2,
+            "offer_type": "offices",
+            "office_type[0]": 1,
+            "region": CITIES.get(region.lower(), "1"),
+        }
+        if price_gte:
+            params["minprice"] = price_gte
+        if price_lte:
+            params["maxprice"] = price_lte
+        if area_gte:
+            params["minarea"] = area_gte
+        if area_lte:
+            params["maxarea"] = area_lte
+        return base_url + "?" + urlencode(params)
 
-    def _input_data(self, data: str, selector: str, by: str = By.XPATH, timeout: int = 5) -> None:
-        input_field = WebDriverWait(self.driver, timeout).until(
-            EC.element_to_be_clickable((by, selector))
-        )
-        input_field.send_keys(data)
+    def _parse_response(self, response: io.BytesIO) -> dict:
+        dataframe = pd.read_excel(response)
+        dataframe.iterrows()
+        dataframe.columns = dataframe.columns.str.strip()
+        dataframe = dataframe.rename(columns=COLUMN_MAP)
+        dataframe = dataframe.replace({pd.NA: None})
 
-    def search(self, query: str, price_gte: str, price_lte: str, area_gte: str, area_lte: str) -> list[Offer]:
-        self.logger.info(f"Searching for offers with query: {query}")
-        offers: list[Offer] = []
+        output_dict = {}
+
+        for _, row in dataframe.iterrows():
+            main_key = row.iloc[0]
+            inner_dict = row.iloc[1:].to_dict()
+            output_dict[main_key] = inner_dict
+        return output_dict
+
+    def search(
+        self,
+        region: str,
+        price_gte: Optional[str],
+        price_lte: Optional[str],
+        area_gte: Optional[str],
+        area_lte: Optional[str],
+        sale: Optional[bool],
+    ) -> dict:
+        self.logger.info(f"Searching for offers with query: {region}")
         self.open_page("https://www.cian.ru/")
-        
-        self.logger.info("bypassed captcha! Procced to find the button")
-        
-        time.sleep(random.randint(1, 10))
 
-        # Selecting type to rend/office
-        self._click_button("a[href='/snyat/']", By.CSS_SELECTOR)
-        time.sleep(random.randint(1, 3))
-        self._click_button("div[data-mark='FilterOfferType'] button", By.CSS_SELECTOR)
-        time.sleep(random.randint(1, 3))
-        self._click_button("//label[.//span[text()='Коммерческая']]")
+        url = self._construct_url(
+            region, price_gte, price_lte, area_gte, area_lte, sale
+        )
+        response = self.httpx_client.get(url)
+        self.logger.info(f"Received response with status code: {response.status_code}")
 
-        # Selecting price range
-        self._click_button("div[data-mark='FilterPrice'] button", By.CSS_SELECTOR)
-        self._input_data(data=price_gte, selector="//input[@placeholder='от']")
-        time.sleep(random.randint(1, 3))
-        self._input_data(data=price_lte, selector="//input[@placeholder='до']")
-        time.sleep(random.randint(1, 3))
-
-        # Selecting City, street, etc
-        time.sleep(random.randint(1, 3))
-        self._input_data(data=query, selector="//input[@id='geo-suggest-input']")
-        city_xpath = f"//div/following-sibling::div"
-        time.sleep(random.randint(1, 2))
-        self._click_button(f"//span[@title='{query}']")
-
-        time.sleep(5)
-
-        # Selecting area range
-        self._click_button("div[data-mark='FilterArea'] button", By.CSS_SELECTOR)
-        time.sleep(random.randint(1, 3))
-        self._input_data(data=area_gte, selector="//input[@placeholder='от']")
-        time.sleep(random.randint(1, 3))
-        self._input_data(data=area_lte, selector="//input[@placeholder='до']")
-
-        # Submitting data
-        time.sleep(random.randint(1, 3))
-        self._click_button(selector="Найти", by=By.LINK_TEXT, timeout=20)
-
-        # Getting all offers in xlsx format
-        time.sleep(random.randint(1, 4))
-        self._click_button("//button[normalize-space()='Сохранить файл в Excel']", timeout=20)
-        
-
-        return offers
+        return self._parse_response(io.BytesIO(response.content))
 
     def bypass_antibot(self, url: str) -> None:
         for _ in range(5):  # Retry up to 5 times
-            if self.driver.title == 'Captcha - база объявлений ЦИАН':
+            if self.driver.title == "Captcha - база объявлений ЦИАН":
                 self.logger.warning(
-                    "Access restricted due to IP issues. Refreshing the page to bypass antibot.")
+                    "Access restricted due to IP issues. Refreshing the page to bypass antibot."
+                )
                 time.sleep(3)
                 self.reset()
                 self.driver.get(url)
-                
-                # recaptcha_iframe = self.driver.find_element(By.XPATH, '//iframe[@title="reCAPTCHA"]')
-                # self.solver.click_recaptcha_v2(iframe=recaptcha_iframe)
                 time.sleep(20)
             else:
-                print("captcha bypassed")
+                self.logger.info("Captcha bypassed")
                 break
         else:
             self.logger.error("Access restricted due to IP issues.")
@@ -175,34 +150,11 @@ class CianBrowser:
 
         session = httpx.Client()
         session.cookies.update(
-            {cookie['name']: cookie['value'] for cookie in self.driver.get_cookies()})
-        session.headers.update({
-            'User-Agent': self.driver.execute_script('return navigator.userAgent')
-        })
+            {cookie["name"]: cookie["value"] for cookie in self.driver.get_cookies()}
+        )
+        session.headers.update(
+            {"User-Agent": self.driver.execute_script("return navigator.userAgent")}
+        )
         self.logger.debug(f"Session cookies: {session.cookies}")
         self.logger.debug(f"Session headers: {session.headers}")
         return session
-    
-    def get_new_session(self):
-        """Get a new httpx session with fresh cookies."""
-        self.reset()
-        self.logger.debug("Got a new HTTPX session with fresh cookies.")
-        return self.httpx_client
-
-
-def main() -> None:
-    time.sleep(3)
-    browser = CianBrowser(headless=False)
-    lst: list[Offer] = browser.search (
-        query="Санкт-Петербург",
-        price_gte="10",
-        price_lte="10000000",
-        area_gte="10",
-        area_lte="10000",
-    )
-    print("Done")
-    input()
-
-
-if __name__ == "__main__":
-    main()
