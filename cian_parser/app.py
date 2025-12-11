@@ -80,8 +80,8 @@ async def search_offers(request: SearchRequest) -> SearchResponse:
             filtered_count=len(offers),
         )
 
-    except Exception as e:
-        logger.error(f"Error during search: {e}")
+    except Exception:
+        logger.exception("An error occurred during search", exc_info=True)
         raise HTTPException(status_code=500, detail="Error during search")
 
     del browser
