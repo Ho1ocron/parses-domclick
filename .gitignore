@@ -209,6 +209,7 @@ __marimo__/
 *.html
 *.txt
 *.json
+*.xlsx
 !requirements.txt
 
 # This one is required for offers.xlsx that selenium downloads. 

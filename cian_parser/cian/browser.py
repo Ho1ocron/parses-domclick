@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from cian_parser.constants import CITIES, COLUMN_MAP, HEADERS
+from cian_parser.cian.parser import ExcelParser
 
 
 class CianBrowser:
@@ -84,21 +85,6 @@ class CianBrowser:
             params["maxarea"] = area_lte
         return base_url + "?" + urlencode(params)
 
-    def _parse_response(self, response: io.BytesIO) -> dict:
-        dataframe = pd.read_excel(response)
-        dataframe.iterrows()
-        dataframe.columns = dataframe.columns.str.strip()
-        dataframe = dataframe.rename(columns=COLUMN_MAP)
-        dataframe = dataframe.replace({pd.NA: None})
-
-        output_dict = {}
-
-        for _, row in dataframe.iterrows():
-            main_key = row.iloc[0]
-            inner_dict = row.iloc[1:].to_dict()
-            output_dict[main_key] = inner_dict
-        return output_dict
-
     def search(
         self,
         region: str,
@@ -117,7 +103,8 @@ class CianBrowser:
         response = self.httpx_client.get(url)
         self.logger.info(f"Received response with status code: {response.status_code}")
 
-        return self._parse_response(io.BytesIO(response.content))
+        parser = ExcelParser(io.BytesIO(response.content))
+        return parser.clean_excel()
 
     def bypass_antibot(self, url: str) -> None:
         for _ in range(5):  # Retry up to 5 times
