@@ -18,7 +18,7 @@ class ExcelParser:
         price = row_slice[0].split(" ")[0]
         currency = row_slice[0].split(" ")[1].strip("./") if len(row_slice[0].split(" ")) > 1 else None
         prepaymnet = row_slice[2] if ifPrepayment else None
-        payment_type = row_slice[0].split(" ")[2] + " " + row_slice[0].split(" ")[3] if len(row_slice) > 1 else None
+        payment_type = row_slice[0].split(" ")[2] + " " + row_slice[0].split(" ")[3] if len(row_slice) > 2 else None
         tax = row_slice[-1]
 
         return {
