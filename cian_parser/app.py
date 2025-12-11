@@ -15,40 +15,28 @@ from cian_parser.cian.browser import CianBrowser
 load_dotenv()
 SELENIUM_HOST = os.getenv("SELENIUM_HOST", "localhost")
 SELENIUM_PORT = int(os.getenv("SELENIUM_PORT", 4444))
+SELENIUM_TIMEOUT = int(os.getenv("SELENIUM_TIMEOUT", 60))
 DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # Setup logging
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
 logger = logging.getLogger("cian_parser")
-browser: CianBrowser | None = None
 sys.excepthook = except_hook
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global browser
-
     logger.info("Starting CianParser lifespan...")
 
     # Wait until Selenium is ready
-    while not is_selenium_ready(host=SELENIUM_HOST, port=SELENIUM_PORT, timeout=60):
+    while not is_selenium_ready(
+        host=SELENIUM_HOST, port=SELENIUM_PORT, timeout=SELENIUM_TIMEOUT
+    ):
         logger.info("Waiting for Selenium server...")
         time.sleep(1)
 
-    # Initialize browser
-    browser = CianBrowser(
-        headless=False,
-        command_executor=f"http://{SELENIUM_HOST}:{SELENIUM_PORT}/wd/hub",
-    )
-
     logger.info("CianParser lifespan started.")
     yield
-
-    # Shutdown
-    if browser:
-        logger.info("Closing browser...")
-        browser.quit()
-        logger.info("Browser closed successfully")
 
 
 app = FastAPI(
@@ -62,16 +50,16 @@ app = FastAPI(
 async def search_offers(request: SearchRequest) -> SearchResponse:
     """
     Main search endpoint.
-    Uses the global browser initialized during startup.
     """
-    global browser
 
-    if browser is None:
-        raise HTTPException(status_code=500, detail="Browser not initialized")
+    logger.info("Initializing browser")
+    browser = CianBrowser(
+        headless=False,
+        command_executor=f"http://{SELENIUM_HOST}:{SELENIUM_PORT}/wd/hub",
+    )
 
     try:
         # Reset browser and fetch final offers
-        browser.reset()
         logger.info(f"Searching for: {request.city}")
 
         offers = browser.search(
@@ -96,6 +84,8 @@ async def search_offers(request: SearchRequest) -> SearchResponse:
         logger.error(f"Error during search: {e}")
         raise HTTPException(status_code=500, detail="Error during search")
 
+    del browser
+
 
 @app.get("/")
 async def root():
@@ -110,4 +100,6 @@ async def root():
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "browser_initialized": browser is not None}
+    return {
+        "status": "healthy",
+    }
