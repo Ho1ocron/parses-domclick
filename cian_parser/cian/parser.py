@@ -40,7 +40,7 @@ class ExcelParser:
 
         split_data = dataframe["area"].str.split(",", expand=True)
 
-        dataframe["area"] = split_data[0]
+        dataframe["area"] = split_data[0].astype(float)
         dataframe["area_units"] = split_data[1]
         df_extracted = dataframe["price"].apply(self._extract_price).apply(pd.Series)
 
