@@ -44,9 +44,12 @@ class CianBrowser:
 
         self.logger.info("Chrome WebDriver initialized successfully.")
 
+    def __del__(self):
+        self.quit()
+
     def quit(self) -> None:
         self.driver.quit()
-        self.logger.info("Browser session quit.")
+        self.logger.info("Browser session destroyed.")
 
     def open_page(self, url: str) -> None:
         """Open a page and handle potential antibot."""
