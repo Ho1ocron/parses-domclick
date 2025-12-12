@@ -4,11 +4,12 @@ import sys
 import time
 from contextlib import asynccontextmanager
 
+import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.responses import JSONResponse
 
 from cian_parser.api.models import SearchRequest, SearchResponse
-from cian_parser.api.self_api import except_hook, is_selenium_ready
 from cian_parser.cian.browser import CianBrowser
 
 # Load environment variables
@@ -21,7 +22,20 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 # Setup logging
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
 logger = logging.getLogger("cian_parser")
-sys.excepthook = except_hook
+
+
+def is_selenium_ready(host, port, timeout=60):
+    url = f"http://{host}:{port}/wd/hub/status"
+    try:
+        r: dict[str, dict] = httpx.get(url).json()
+        print(r)
+        if r.get("value", {}).get("ready"):
+            print(r)
+            return True
+    except Exception as e:
+        print(e)
+        pass
+    return False
 
 
 @asynccontextmanager
@@ -103,3 +117,9 @@ async def health_check():
     return {
         "status": "healthy",
     }
+
+
+@app.exception_handler(Exception)
+async def exception_handler(request: Request, exc: Exception):
+    logger.exception("An error occurred", exc_info=True)
+    return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
