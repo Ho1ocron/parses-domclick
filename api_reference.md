@@ -98,17 +98,16 @@ Search for real estate offers with optional filters.
   "query": "Moscow",
   "total_found": 42,
   "filtered_count": 42,
-  "offers": {
-    "offer_id_1": {
+  "offers": [
+    {
+      "offer_id": 123,
       "title": "...",
       "price": "...",
       "area": "...",
       "...": "..."
     },
-    "offer_id_2": {
-      "...": "..."
-    }
-  }
+    ...
+  ]
 }
 ```
 

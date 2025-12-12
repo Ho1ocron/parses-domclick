@@ -9,6 +9,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
+from cian_parser.cian.models import Offer
 from cian_parser.cian.parser import ExcelParser
 from cian_parser.constants import CITIES, HEADERS
 
@@ -92,7 +93,7 @@ class CianBrowser:
         area_gte: Optional[str],
         area_lte: Optional[str],
         sale: Optional[bool],
-    ) -> dict:
+    ) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {region}")
         self.open_page("https://www.cian.ru/")
 
