@@ -39,6 +39,7 @@ COLUMN_MAP = {
     "Дополнительно": "additional",
     "Лифт": "elevator",
     "Ссылка на объявление": "listing_url",
+    "Тип договора": "contract_type"
 }
 
 CITIES = {
