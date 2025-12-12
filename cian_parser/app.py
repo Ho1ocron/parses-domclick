@@ -1,16 +1,15 @@
 import logging
 import os
-import sys
 import time
 from contextlib import asynccontextmanager
+from threading import excepthook
 
 import httpx
 from dotenv import load_dotenv
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from cian_parser.api.models import SearchRequest, SearchResponse
-from cian_parser.cian.browser import CianBrowser
+from cian_parser.api.v1 import router as v1_router
 
 # Load environment variables
 load_dotenv()
@@ -21,19 +20,17 @@ DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
 # Setup logging
 logging.basicConfig(level=logging.DEBUG if DEBUG else logging.INFO)
-logger = logging.getLogger("cian_parser")
+logger = logging.getLogger(__name__)
 
 
-def is_selenium_ready(host, port, timeout=60):
+def is_selenium_ready(host, port):
     url = f"http://{host}:{port}/wd/hub/status"
     try:
         r: dict[str, dict] = httpx.get(url).json()
-        print(r)
         if r.get("value", {}).get("ready"):
-            print(r)
             return True
-    except Exception as e:
-        print(e)
+    except Exception:
+        logger.error(f"Error checking Selenium server status, {url}", exc_info=True)
         pass
     return False
 
@@ -43,11 +40,9 @@ async def lifespan(app: FastAPI):
     logger.info("Starting CianParser lifespan...")
 
     # Wait until Selenium is ready
-    while not is_selenium_ready(
-        host=SELENIUM_HOST, port=SELENIUM_PORT, timeout=SELENIUM_TIMEOUT
-    ):
+    while not is_selenium_ready(host=SELENIUM_HOST, port=SELENIUM_PORT):
         logger.info("Waiting for Selenium server...")
-        time.sleep(1)
+        time.sleep(SELENIUM_TIMEOUT)
 
     logger.info("CianParser lifespan started.")
     yield
@@ -59,46 +54,8 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-
-@app.post("/search", response_model=SearchResponse)
-async def search_offers(request: SearchRequest) -> SearchResponse:
-    """
-    Main search endpoint.
-    """
-
-    logger.info("Initializing browser")
-    browser = CianBrowser(
-        headless=False,
-        command_executor=f"http://{SELENIUM_HOST}:{SELENIUM_PORT}/wd/hub",
-    )
-
-    try:
-        # Reset browser and fetch final offers
-        logger.info(f"Searching for: {request.city}")
-
-        offers = browser.search(
-            request.city,
-            request.price_gte,
-            request.price_lte,
-            request.area_gte,
-            request.area_lte,
-            request.sale,
-        )
-
-        logger.info(f"Found {len(offers)} offers")
-
-        return SearchResponse(
-            offers=offers,
-            query=request.city,
-            total_found=int(len(offers)),
-            filtered_count=len(offers),
-        )
-
-    except Exception:
-        logger.exception("An error occurred during search", exc_info=True)
-        raise HTTPException(status_code=500, detail="Error during search")
-
-    del browser
+# Include v1 router
+app.include_router(v1_router)
 
 
 @app.get("/")
@@ -107,7 +64,7 @@ async def root():
     return {
         "name": "Cian Parser API",
         "version": "1.0.0",
-        "endpoints": {"POST /search": "Search for offers with filters"},
+        "endpoints": {"POST /v1/search": "Search for offers with filters"},
     }
 
 
