@@ -2,7 +2,6 @@ import logging
 import os
 import time
 from contextlib import asynccontextmanager
-from threading import excepthook
 
 import httpx
 from dotenv import load_dotenv
@@ -64,7 +63,7 @@ async def root():
     return {
         "name": "Cian Parser API",
         "version": "1.0.0",
-        "endpoints": {"POST /v1/search": "Search for offers with filters"},
+        "endpoints": {"GET /v1/search": "Search for offers with filters"},
     }
 
 

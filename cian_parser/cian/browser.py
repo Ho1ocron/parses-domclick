@@ -5,13 +5,12 @@ from typing import Optional
 from urllib.parse import urlencode
 
 import httpx
-import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from cian_parser.constants import CITIES, COLUMN_MAP, HEADERS
 from cian_parser.cian.parser import ExcelParser
+from cian_parser.constants import CITIES, HEADERS
 
 
 class CianBrowser:
