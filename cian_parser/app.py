@@ -39,9 +39,14 @@ async def lifespan(app: FastAPI):
     logger.info("Starting CianParser lifespan...")
 
     # Wait until Selenium is ready
-    while not is_selenium_ready(host=SELENIUM_HOST, port=SELENIUM_PORT):
+    for _ in range(5):
+        if is_selenium_ready(host=SELENIUM_HOST, port=SELENIUM_PORT):
+            break
         logger.info("Waiting for Selenium server...")
         time.sleep(SELENIUM_TIMEOUT)
+    else:
+        logger.error("Selenium server not ready after 5 attempts")
+        raise TimeoutError("Selenium server not ready")
 
     logger.info("CianParser lifespan started.")
     yield
