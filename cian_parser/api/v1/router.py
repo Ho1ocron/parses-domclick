@@ -50,12 +50,10 @@ async def search_offers(
         )
 
         logger.info(f"Found {len(offers)} offers")
-
         return SearchResponse(
             offers=offers,
             query=city,
-            total_found=int(len(offers)),
-            filtered_count=len(offers),
+            count=len(offers),
         )
 
     except Exception:

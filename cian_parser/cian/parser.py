@@ -1,8 +1,10 @@
 import io
 import re
 
+import numpy as np
 import pandas as pd
 
+from cian_parser.cian.models import Offer
 from cian_parser.constants import COLUMN_MAP
 
 
@@ -38,25 +40,18 @@ class ExcelParser:
             "tax": tax,
         }
 
-    def clean_excel(self) -> dict:
+    def clean_excel(self) -> list[Offer]:
         dataframe = pd.read_excel(self.excel_file)
-        dataframe.iterrows()
         dataframe.columns = dataframe.columns.str.strip()
         dataframe = dataframe.rename(columns=COLUMN_MAP)
-        dataframe = dataframe.replace({pd.NA: None})
-        output_dict = {}
+        dataframe = dataframe.replace({pd.NA: None, np.nan: None})
 
         split_data = dataframe["area"].str.split(",", expand=True)
 
         dataframe["area"] = split_data[0].astype(float)
-        dataframe["area_units"] = split_data[1]
+        dataframe["area_units"] = split_data[1].str.strip()
         df_extracted = dataframe["price"].apply(self._extract_price).apply(pd.Series)
 
         dataframe = pd.concat([dataframe, df_extracted], axis=1)
 
-        for _, row in dataframe.iterrows():
-            main_key = row.iloc[0]
-            inner_dict = row.iloc[1:].to_dict()
-            output_dict[main_key] = inner_dict
-
-        return output_dict
+        return [Offer.model_validate(row.to_dict()) for _, row in dataframe.iterrows()]

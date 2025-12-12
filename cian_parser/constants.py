@@ -18,7 +18,7 @@ META_PAYLOAD = {
 }
 
 COLUMN_MAP = {
-    "ID  объявления": "ID",
+    "ID  объявления": "offer_id",
     "Тип": "type",
     "Площадь": "area",
     "Возможное назначение": "possible_purpose",
@@ -39,6 +39,7 @@ COLUMN_MAP = {
     "Дополнительно": "additional",
     "Лифт": "elevator",
     "Ссылка на объявление": "listing_url",
+    "Тип договора": "contract_type",
 }
 
 CITIES = {
