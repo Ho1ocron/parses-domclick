@@ -40,20 +40,33 @@ async def search_offers(
         # Reset browser and fetch final offers
         logger.info(f"Searching for: {city}")
 
-        offers = browser.search(
-            city,
-            price_gte,
-            price_lte,
-            area_gte,
-            area_lte,
-            sale,
-        )
+        try:
+            offers = browser.search(
+                city,
+                price_gte,
+                price_lte,
+                area_gte,
+                area_lte,
+                sale,
+            )
+
+        except ValueError:
+            logger.warning("Failed to fetch offers")
+            return SearchResponse(
+                offers=[],
+                query=city,
+                count=0,
+                status="error",
+                message="Failed to fetch offers",
+            )
 
         logger.info(f"Found {len(offers)} offers")
         return SearchResponse(
             offers=offers,
             query=city,
             count=len(offers),
+            status="success",
+            message="",
         )
 
     except Exception:

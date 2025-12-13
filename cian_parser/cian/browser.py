@@ -101,10 +101,11 @@ class CianBrowser:
             region, price_gte, price_lte, area_gte, area_lte, sale
         )
         response = self.httpx_client.get(url)
-        self.logger.info(f"Received response with status code: {response.status_code}")
-
-        parser = ExcelParser(io.BytesIO(response.content))
-        return parser.clean_excel()
+        if response.status_code == 200:
+            parser = ExcelParser(io.BytesIO(response.content))
+            return parser.clean_excel()
+        else:
+            raise ValueError(f"Failed to fetch data from {url}")
 
     def bypass_antibot(self, url: str) -> None:
         for _ in range(5):  # Retry up to 5 times
