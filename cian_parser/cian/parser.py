@@ -1,7 +1,10 @@
-import pandas as pd
-import re
 import io
+import re
 
+import numpy as np
+import pandas as pd
+
+from cian_parser.cian.models import Offer
 from cian_parser.constants import COLUMN_MAP
 
 
@@ -16,9 +19,17 @@ class ExcelParser:
 
         row_slice = row.split(",")
         price = row_slice[0].split(" ")[0]
-        currency = row_slice[0].split(" ")[1].strip("./") if len(row_slice[0].split(" ")) > 1 else None
+        currency = (
+            row_slice[0].split(" ")[1].strip("./")
+            if len(row_slice[0].split(" ")) > 1
+            else None
+        )
         prepaymnet = row_slice[2] if ifPrepayment else None
-        payment_type = row_slice[0].split(" ")[2] + " " + row_slice[0].split(" ")[3] if len(row_slice) > 2 else None
+        payment_type = (
+            row_slice[0].split(" ")[2] + " " + row_slice[0].split(" ")[3]
+            if len(row_slice) > 2
+            else None
+        )
         tax = row_slice[-1]
 
         return {
@@ -28,38 +39,19 @@ class ExcelParser:
             "prepayment": prepaymnet,
             "tax": tax,
         }
-                
-    
-    def clean_excel(self) -> dict:
+
+    def clean_excel(self) -> list[Offer]:
         dataframe = pd.read_excel(self.excel_file)
-        dataframe.iterrows()
         dataframe.columns = dataframe.columns.str.strip()
         dataframe = dataframe.rename(columns=COLUMN_MAP)
-        dataframe = dataframe.replace({pd.NA: None})
-        output_dict = {}
+        dataframe = dataframe.replace({pd.NA: None, np.nan: None})
 
         split_data = dataframe["area"].str.split(",", expand=True)
 
         dataframe["area"] = split_data[0].astype(float)
-        dataframe["area_units"] = split_data[1]
+        dataframe["area_units"] = split_data[1].str.strip()
         df_extracted = dataframe["price"].apply(self._extract_price).apply(pd.Series)
 
         dataframe = pd.concat([dataframe, df_extracted], axis=1)
 
-        for _, row in dataframe.iterrows():
-            main_key = row.iloc[0]
-            inner_dict = row.iloc[1:].to_dict()
-            output_dict[main_key] = inner_dict
-        
-        return output_dict
-    
-
-if __name__ == "__main__":
-    from pathlib import Path
-    import os
-
-    BASE_DIR = Path(__file__).resolve().parent.parent.parent
-
-
-    parser = ExcelParser(str(BASE_DIR / "Downloads/offers.xlsx"))
-    print(parser.clean_excel())
+        return [Offer.model_validate(row.to_dict()) for _, row in dataframe.iterrows()]
