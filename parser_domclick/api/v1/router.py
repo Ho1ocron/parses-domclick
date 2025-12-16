@@ -5,7 +5,7 @@ from typing import Optional
 from fastapi import APIRouter, HTTPException, Query
 
 from parser_domclick.api.v1.models import SearchResponse
-from parser_domclick.cian.browser import CianBrowser
+from parser_domclick.domclick.browser import DomClickBrowser
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ async def search_offers(
     """
 
     logger.info("Initializing browser")
-    browser = CianBrowser(
+    browser = DomClickBrowser(
         headless=False,
         command_executor=f"http://{SELENIUM_HOST}:{SELENIUM_PORT}/wd/hub",
     )
