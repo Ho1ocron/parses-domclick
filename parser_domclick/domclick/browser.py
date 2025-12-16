@@ -59,7 +59,7 @@ class DomClickBrowser:
 
     def _construct_url(
         self,
-        region: str,
+        address: str,
         price_gte: Optional[str],
         price_lte: Optional[str],
         area_gte: Optional[str],
@@ -72,7 +72,7 @@ class DomClickBrowser:
         params = {
             "deal_type": "rent" if not sale else "sale",
             "offer_type": "office",
-            "address": CITIES.get(region.lower(), "1"),
+            "address": address,
         }
         if price_gte:
             params[f"{'rent' if not sale else 'sale'}_price__gte"] = price_gte
