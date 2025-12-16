@@ -4,8 +4,8 @@ import re
 import numpy as np
 import pandas as pd
 
-from cian_parser.cian.models import Offer
-from cian_parser.constants import COLUMN_MAP
+from parser_domclick.cian.models import Offer
+from parser_domclick.constants import COLUMN_MAP
 
 
 class ExcelParser:

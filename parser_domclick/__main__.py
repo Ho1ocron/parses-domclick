@@ -1,6 +1,6 @@
 import logging
 
-from cian_parser.cian import CianBrowser
+from parser_domclick.cian import CianBrowser
 
 logging.basicConfig(level=logging.INFO)
 

@@ -9,9 +9,9 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from cian_parser.cian.models import Offer
-from cian_parser.cian.parser import ExcelParser
-from cian_parser.constants import CITIES, HEADERS
+from parser_domclick.cian.models import Offer
+from parser_domclick.cian.parser import ExcelParser
+from parser_domclick.constants import CITIES, HEADERS
 
 
 class CianBrowser:

@@ -4,8 +4,8 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
-from cian_parser.api.v1.models import SearchResponse
-from cian_parser.cian.browser import CianBrowser
+from parser_domclick.api.v1.models import SearchResponse
+from parser_domclick.cian.browser import CianBrowser
 
 # Setup logging
 logger = logging.getLogger(__name__)

@@ -8,7 +8,7 @@ from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-from cian_parser.api.v1 import router as v1_router
+from parser_domclick.api.v1 import router as v1_router
 
 # Load environment variables
 load_dotenv()
