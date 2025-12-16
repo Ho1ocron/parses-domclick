@@ -99,7 +99,7 @@ class DomClickBrowser:
         GEO_URL = 'https://geo-service.domclick.ru/research/api/v1/autocomplete/regions'
         region_guid = self.httpx_client.get(GEO_URL, params={"name": address}).json()
         print(region_guid)
-        region_guid = region_guid["answers"]["items"][0]["region_guid"]
+        region_guid = region_guid["answer"]["items"][0]["region_guid"]
         url = self._construct_url(
             region_guid, price_gte, price_lte, area_gte, area_lte, sale
         )
