@@ -68,7 +68,7 @@ class DomClickBrowser:
     ) -> str:
         base_url = "https://bff-search-web.domclick.ru/api/offers/v1"
         # https://bff-search-web.domclick.ru/api/offers/count/v1?address=1d1463ae-c80f-4d19-9331-a1b68a85b553&limit=20&sort=qi&sort_dir=desc&deal_type=rent&category=commercial&offer_type=office&aids=2299&rent_price__gte=10&rent_price__lte=10000000&area__gte=10&area__lte=10000&floor__gte=1&floor__lte=10
-
+        # https://bff-search-web.domclick.ru/api/offers/count//v1?address=1d1463ae-c80f-4d19-9331-a1b68a85b553&area__lte=10
         params = {
             "deal_type": "rent" if not sale else "sale",
             "offer_type": "office",
@@ -96,8 +96,11 @@ class DomClickBrowser:
         self.logger.info(f"Searching for offers with query: {address}")
         self.open_page("https://domclick.ru/")
 
+        GEO_URL = 'https://geo-service.domclick.ru/research/api/v1/autocomplete/regions'
+        region_guid = self.httpx_client.get(GEO_URL, params={"name": address}).text
+        print(region_guid)
         url = self._construct_url(
-            address, price_gte, price_lte, area_gte, area_lte, sale
+            region_guid, price_gte, price_lte, area_gte, area_lte, sale
         )
         response = self.httpx_client.get(url)
         if response.status_code == 200:
