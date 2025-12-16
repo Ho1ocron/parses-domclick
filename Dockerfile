@@ -30,7 +30,7 @@ RUN useradd -m -r appuser && \
 WORKDIR /app
 
 # Copy application code
-COPY --chown=appuser:appuser --exclude=.venv --exclude=*.pyc --exclude=.env cian_parser cian_parser
+COPY --chown=appuser:appuser --exclude=.venv --exclude=*.pyc --exclude=.env parser_domclick parser_domclick
 
 # Disable bytecode generation and buffering
 ENV PYTHONDONTWRITEBYTECODE=1
@@ -43,4 +43,4 @@ USER appuser
 EXPOSE 8000
 
 # Run the application
-CMD ["uvicorn", "cian_parser.app:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "parser_domclick.app:app", "--host", "0.0.0.0", "--port", "8000"]
