@@ -75,9 +75,9 @@ class DomClickBrowser:
             "address": CITIES.get(region.lower(), "1"),
         }
         if price_gte:
-            params[f"{"rent" if not sale else "sale"}_price__gte"] = price_gte
+            params[f"{'rent' if not sale else 'sale'}_price__gte"] = price_gte
         if price_lte:
-            params[f"{"rent" if not sale else "sale"}_price__lte"] = price_lte
+            params[f"{'rent' if not sale else 'sale'}_price__lte"] = price_lte
         if area_gte:
             params["area__gte"] = area_gte
         if area_lte:
