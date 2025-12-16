@@ -101,8 +101,8 @@ class DomClickBrowser:
         )
         response = self.httpx_client.get(url)
         if response.status_code == 200:
-            parser = ExcelParser(io.BytesIO(response.content))
-            return parser.clean_excel()
+            # parser = ExcelParser(io.BytesIO(response.content))
+            return response.json()
         else:
             raise ValueError(f"Failed to fetch data from {url}")
 
