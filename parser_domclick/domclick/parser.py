@@ -4,7 +4,7 @@ import re
 import numpy as np
 import pandas as pd
 
-from parser_domclick.cian.models import Offer
+from parser_domclick.domclick.models import Offer
 from parser_domclick.constants import COLUMN_MAP
 
 

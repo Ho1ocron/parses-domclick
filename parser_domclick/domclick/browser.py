@@ -9,8 +9,8 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
-from parser_domclick.cian.models import Offer
-from parser_domclick.cian.parser import ExcelParser
+from parser_domclick.domclick.models import Offer
+from parser_domclick.domclick.parser import ExcelParser
 from parser_domclick.constants import CITIES, HEADERS
 
 
