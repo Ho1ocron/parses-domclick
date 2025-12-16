@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 
-from parser_domclick.cian.models import Offer
+from parser_domclick.domclick.models import Offer
 
 
 class SearchResponse(BaseModel):

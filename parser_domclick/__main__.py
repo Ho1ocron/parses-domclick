@@ -1,6 +1,6 @@
 import logging
 
-from parser_domclick.cian import CianBrowser
+from parser_domclick.domclick.browser import DomClickBrowser
 
 logging.basicConfig(level=logging.INFO)
 
@@ -8,7 +8,7 @@ logging.basicConfig(level=logging.INFO)
 def main():
     from pprint import pprint
 
-    browser = CianBrowser()
+    browser = DomClickBrowser()
     offers = browser.search("Москва", "1000000", "2000000", "50", "100")
 
     pprint(offers)
