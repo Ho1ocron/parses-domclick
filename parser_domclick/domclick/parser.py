@@ -6,13 +6,14 @@ import logging
 
 class Parser:
     logger: logging.Logger
+    response: dict[str, dict]
 
     def __init__(self, response: Dict) -> None:
         self.response = response
 
     def to_offers(self) -> List[Offer]:
         self.logger = logging.getLogger(__name__)
-        items = self.response.get("items", [])
+        items = self.response["result"].get("items", [])
         offers: List[Offer] = []
         self.logger.info(f"Appending offers.")
         for item in items:
