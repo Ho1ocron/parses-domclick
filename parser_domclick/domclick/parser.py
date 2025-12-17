@@ -14,11 +14,11 @@ class Parser:
         self.logger = logging.getLogger(__name__)
         items = self.response.get("items", [])
         offers: List[Offer] = []
-
+        self.logger.info(f"Appending offers.")
         for item in items:
             try:
                 offers.append(self._item_to_offer(item))
-                self.logger.info(f"Appending offers.")
+                
             except Exception as e:
                 self.logger.exception(f"Error during converting offers.", exc_info=True)
                 continue
