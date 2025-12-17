@@ -93,9 +93,9 @@ class Parser:
 
     def _floor(self, item: Dict[str, Any]) -> Optional[str]:
         objectInfo: dict[str, float] = item["objectInfo"]
-        floor = objectInfo.get("floor")
+        floor = objectInfo.get("floor", 10)
         house: dict[str, float] = item["house"]
-        floors_total = house.get("floorsTotal")
+        floors_total = house.get("floorsTotal", 10)
         if floors_total is not None and floor is not None:
             return f"{floor}/{floors_total}"
         return None
