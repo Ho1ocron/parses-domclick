@@ -1,6 +1,5 @@
 from typing import Any, Dict, List, Optional, Union
-
-from models import Offer  # your existing Pydantic model
+from parser_domclick.domclick.models import Offer
 
 
 class Parser:
@@ -23,10 +22,6 @@ class Parser:
                 continue
 
         return offers
-
-    # --------------------------------------------------
-    # Item → Offer
-    # --------------------------------------------------
 
     def _item_to_offer(self, item: Dict[str, Any]) -> Offer:
         return Offer(
@@ -52,10 +47,6 @@ class Parser:
             prepayment=self._prepayment(item),
             tax=self._tax(item),
         )
-
-    # --------------------------------------------------
-    # Field extractors
-    # --------------------------------------------------
 
     def _property_type(self, item: Dict[str, Any]) -> Optional[str]:
         deal = item.get("dealType")
