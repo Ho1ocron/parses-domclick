@@ -18,7 +18,7 @@ class Parser:
         for item in items:
             try:
                 offers.append(self._item_to_offer(item))
-                self.logger.debug(f"Appending offers.")
+                self.logger.info(f"Appending offers.")
             except Exception as e:
                 print(f"Error: {e}")
                 self.logger.exception(f"Error during converting offers.", exc_info=True)
