@@ -20,7 +20,7 @@ class Parser:
                 offers.append(self._item_to_offer(item))
                 self.logger.debug(f"Appending offers.")
             except Exception as e:
-                self.logger.error(f"An error occured during parsing: {e}")
+                print(f"Error: {e}")
                 self.logger.exception(f"Error during converting offers.", exc_info=True)
                 continue
 
