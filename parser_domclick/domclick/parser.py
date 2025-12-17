@@ -1,24 +1,26 @@
 from typing import Any, Dict, List, Optional, Union
 from parser_domclick.domclick.models import Offer
 
+import logging
+
 
 class Parser:
-    """
-    Converts a full Cian API response into a list of Offer models.
-    """
+    logger: logging.Logger
 
     def __init__(self, response: Dict) -> None:
         self.response = response
 
     def to_offers(self) -> List[Offer]:
+        self.logger = logging.getLogger(__name__)
         items = self.response.get("items", [])
         offers: List[Offer] = []
 
         for item in items:
             try:
                 offers.append(self._item_to_offer(item))
-            except Exception:
-                # Optionally log malformed offers here
+                self.logger.debug(f"Appending offers.")
+            except Exception as e:
+                self.logger.exception(f"Error during converting offers.", exc_info=True)
                 continue
 
         return offers
