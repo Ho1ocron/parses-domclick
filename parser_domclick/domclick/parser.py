@@ -12,6 +12,16 @@ class Parser:
         self.response = response
         self.logger = logging.getLogger(__name__)
 
+    @property
+    def get_offset(self) -> int:
+        offset = self.response["result"]["pagination"]["offset"]
+        return offset
+    
+    @property
+    def get_total(self) -> int:
+        total = self.response["result"]["pagination"]["limit"]
+        return total
+
     def to_offers(self) -> List[Offer]:
         items = self.response["result"].get("items", [])
         offers: List[Offer] = []
@@ -25,20 +35,6 @@ class Parser:
                 continue
 
         return offers
-    
-    def _pagination(self) -> Dict[str, Any]:
-        pagination = self.response["result"].get("pagination", {})
-        return pagination
-    
-    @property
-    def get_offset(self) -> int:
-        offset = self.response["result"]["pagination"]["offset"]
-        return offset
-    
-    @property
-    def get_total(self) -> int:
-        total = self.response["result"]["pagination"]["limit"]
-        return total
 
     def _item_to_offer(self, item: Dict) -> Offer:
         return Offer(
@@ -72,11 +68,11 @@ class Parser:
         return float(area or 0)
     
     def _metro(self, item: Dict[str, Dict[str, Any]]) -> Optional[str]:
-        address: Dict[str, list[str]] = item["address"]
+        address: Dict[str, list[dict]] = item["address"]
         if isinstance(address, dict):
-            metro: list[str] = address["subways"]
+            metro: list[dict] = address["subways"]
             if metro:
-                return metro[0]
+                return metro[0]["name"]
         return None
 
     def _address(self, item: Dict[str, Any]) -> Optional[str]:
