@@ -73,6 +73,7 @@ class DomClickBrowser:
             "offer_type": "office",
             "address": address,
         }
+        self.logger.info(f"Additional params status: {price_gte}, {price_lte}")
         if price_gte:
             params[f"{'rent' if not sale else 'sale'}_price__gte"] = price_gte
         if price_lte:
