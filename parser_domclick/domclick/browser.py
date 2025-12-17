@@ -4,13 +4,14 @@ from typing import Optional
 from urllib.parse import urlencode
 
 import httpx
+from _typeshed import OpenBinaryMode
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
+from parser_domclick.constants import CITIES, HEADERS
 from parser_domclick.domclick.models import Offer
 from parser_domclick.domclick.parser import Parser
-from parser_domclick.constants import CITIES, HEADERS
 
 
 class DomClickBrowser:
@@ -64,12 +65,12 @@ class DomClickBrowser:
         area_gte: Optional[str],
         area_lte: Optional[str],
         sale: Optional[bool],
-        offset: int = 0
+        offset: int = 0,
     ) -> str:
         base_url = "https://bff-search-web.domclick.ru/api/offers/v1"
         # https://bff-search-web.domclick.ru/api/offers/count/v1?address=1d1463ae-c80f-4d19-9331-a1b68a85b553&limit=20&sort=qi&sort_dir=desc&deal_type=rent&category=commercial&offer_type=office&aids=2299&rent_price__gte=10&rent_price__lte=10000000&area__gte=10&area__lte=10000&floor__gte=1&floor__lte=10
         params = {
-            "limit": 30, # Эта штука нужна здесь для того, чтобы домклик выкладывал сразу все, что у него есть, а не мин 10 штук
+            "limit": 30,  # Эта штука нужна здесь для того, чтобы домклик выкладывал сразу все, что у него есть, а не мин 10 штук
             "deal_type": "rent" if not sale else "sale",
             "offer_type": "office",
             "address": address,
@@ -94,7 +95,7 @@ class DomClickBrowser:
         area_gte: Optional[str],
         area_lte: Optional[str],
         sale: Optional[bool],
-        pages_number: int = 5
+        pages_number: int,
     ) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {address}")
         self.open_page("https://domclick.ru/")
@@ -102,10 +103,10 @@ class DomClickBrowser:
         GEO_URL = "https://geo-service.domclick.ru/research/api/v1/autocomplete/regions"
         region_guid = self.httpx_client.get(GEO_URL, params={"name": address}).json()
         guid = region_guid["answer"]["items"][0]["guid"]
-        offset = 30 
+        offset = 30
         for i in range(pages_number):  # Fetch up to 5 pages
             url = self._construct_url(
-                guid, price_gte, price_lte, area_gte, area_lte, sale, offset=offset*i
+                guid, price_gte, price_lte, area_gte, area_lte, sale, offset=offset * i
             )
             response = self.httpx_client.get(url)
             if response.status_code == 200:
@@ -115,7 +116,7 @@ class DomClickBrowser:
             else:
                 raise ValueError(f"Failed to fetch data from {url}")
             time.sleep(0.5)
-            
+
         return [offer for sublist in offers for offer in sublist]
 
     def bypass_antibot(self, url: str) -> None:
