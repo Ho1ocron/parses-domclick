@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class Offer(BaseModel):
-    """Model representing a real estate offer from Cian."""
+    """Model representing a real estate offer from the parser."""
 
     offer_id: int = Field(..., description="Unique identifier of the offer")
     type: Optional[str] = Field(

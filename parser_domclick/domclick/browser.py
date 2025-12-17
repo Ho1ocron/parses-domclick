@@ -10,7 +10,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
 
 from parser_domclick.domclick.models import Offer
-from parser_domclick.domclick.parser import ExcelParser
+from parser_domclick.domclick.parser import Parser
 from parser_domclick.constants import CITIES, HEADERS
 
 
@@ -96,7 +96,7 @@ class DomClickBrowser:
         self.logger.info(f"Searching for offers with query: {address}")
         self.open_page("https://domclick.ru/")
 
-        GEO_URL = 'https://geo-service.domclick.ru/research/api/v1/autocomplete/regions'
+        GEO_URL = "https://geo-service.domclick.ru/research/api/v1/autocomplete/regions"
         region_guid = self.httpx_client.get(GEO_URL, params={"name": address}).json()
         region_guid = region_guid["answer"]["items"][0]["region_guid"]
         url = self._construct_url(
@@ -104,8 +104,8 @@ class DomClickBrowser:
         )
         response = self.httpx_client.get(url)
         if response.status_code == 200:
-            # parser = ExcelParser(io.BytesIO(response.content))
-            return response.json()
+            parser = Parser(response.json())
+            return parser.to_offers()
         else:
             raise ValueError(f"Failed to fetch data from {url}")
 
