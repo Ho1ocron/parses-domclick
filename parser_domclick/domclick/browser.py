@@ -94,6 +94,7 @@ class DomClickBrowser:
         area_gte: Optional[str],
         area_lte: Optional[str],
         sale: Optional[bool],
+        pages_number: int = 5
     ) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {address}")
         self.open_page("https://domclick.ru/")
@@ -102,7 +103,7 @@ class DomClickBrowser:
         region_guid = self.httpx_client.get(GEO_URL, params={"name": address}).json()
         guid = region_guid["answer"]["items"][0]["guid"]
         offset = 30 
-        for i in range(5):  # Fetch up to 5 pages
+        for i in range(pages_number):  # Fetch up to 5 pages
             url = self._construct_url(
                 guid, price_gte, price_lte, area_gte, area_lte, sale, offset=offset*i
             )

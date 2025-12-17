@@ -25,6 +25,7 @@ async def search_offers(
     area__gte: Optional[str] = Query(None, description="Minimum area in m²"),
     area__lte: Optional[str] = Query(None, description="Maximum area in m²"),
     sale: Optional[bool] = Query(None, description="Sale or Rent"),
+    pages_number: Optional[int] = Query(None, description="Number of pages that we would look-up for in during parsing")
 ) -> SearchResponse:
     """
     Main search endpoint.
@@ -48,6 +49,7 @@ async def search_offers(
                 area__gte,
                 area__lte,
                 sale,
+                pages_number #type: ignore
             )
 
         except ValueError:
