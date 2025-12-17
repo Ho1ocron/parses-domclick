@@ -97,20 +97,23 @@ class DomClickBrowser:
     ) -> list[Offer]:
         self.logger.info(f"Searching for offers with query: {address}")
         self.open_page("https://domclick.ru/")
-
+        offers: list[list[Offer]] = []
         GEO_URL = "https://geo-service.domclick.ru/research/api/v1/autocomplete/regions"
         region_guid = self.httpx_client.get(GEO_URL, params={"name": address}).json()
         guid = region_guid["answer"]["items"][0]["guid"]
-        url = self._construct_url(
-            guid, price_gte, price_lte, area_gte, area_lte, sale
-        )
-        response = self.httpx_client.get(url)
-        if response.status_code == 200:
-            self.logger.info("Parsing offers.")
-            parser = Parser(response.json())
-            return parser.to_offers()
-        else:
-            raise ValueError(f"Failed to fetch data from {url}")
+        for i in range(4):
+            url = self._construct_url(
+                guid, price_gte, price_lte, area_gte, area_lte, sale
+            )
+            response = self.httpx_client.get(url)
+            if response.status_code == 200:
+                self.logger.info("Parsing offers.")
+                parser = Parser(response.json())
+                offers.append(parser.to_offers())
+            else:
+                raise ValueError(f"Failed to fetch data from {url}")
+            
+        return [offer for sublist in offers for offer in sublist]
 
     def bypass_antibot(self, url: str) -> None:
         for _ in range(5):  # Retry up to 5 times
