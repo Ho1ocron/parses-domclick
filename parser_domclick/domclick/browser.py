@@ -103,6 +103,7 @@ class DomClickBrowser:
         )
         response = self.httpx_client.get(url)
         if response.status_code == 200:
+            self.logger.info("Parsing offers.")
             parser = Parser(response.json())
             return parser.to_offers()
         else:
