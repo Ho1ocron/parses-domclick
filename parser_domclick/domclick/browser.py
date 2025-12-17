@@ -4,7 +4,6 @@ from typing import Optional
 from urllib.parse import urlencode
 
 import httpx
-from _typeshed import OpenBinaryMode
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.remote.webdriver import WebDriver
