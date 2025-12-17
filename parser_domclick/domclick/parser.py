@@ -1,14 +1,13 @@
-from typing import Any, Dict, List, Optional, Union
-from parser_domclick.domclick.models import Offer
-
 import logging
+from typing import Any, Optional
+from parser_domclick.domclick.models import Offer
 
 
 class Parser:
     logger: logging.Logger
     response: dict[str, dict]
 
-    def __init__(self, response: Dict) -> None:
+    def __init__(self, response: dict) -> None:
         self.response = response
         self.logger = logging.getLogger(__name__)
 
@@ -22,9 +21,9 @@ class Parser:
         total = self.response["result"]["pagination"]["limit"]
         return total
 
-    def to_offers(self) -> List[Offer]:
+    def to_offers(self) -> list[Offer]:
         items = self.response["result"].get("items", [])
-        offers: List[Offer] = []
+        offers: list[Offer] = []
         self.logger.info(f"Appending offers.")
         for item in items:
             try:
@@ -36,7 +35,7 @@ class Parser:
 
         return offers
 
-    def _item_to_offer(self, item: Dict) -> Offer:
+    def _item_to_offer(self, item: dict) -> Offer:
         return Offer(
             offer_id=item.get("id"),  # type: ignore
             type=self._property_type(item),
@@ -52,14 +51,14 @@ class Parser:
             area_units="м2",
         )
 
-    def _property_type(self, item: Dict[str, Any]) -> Optional[str]:
+    def _property_type(self, item: dict[str, Any]) -> Optional[str]:
         deal = item.get("dealType")
         offer = item.get("offerType")
         if deal and offer:
             return f"{deal.capitalize()} {offer}"
         return offer
 
-    def _area(self, item: Dict[str, Any]) -> float:
+    def _area(self, item: dict[str, Any]) -> float:
         objectInfo: dict[str, float] = item["objectInfo"]
         area = objectInfo.get("area")
 
@@ -67,40 +66,40 @@ class Parser:
             return float(area.get("value", 0))
         return float(area or 0)
     
-    def _metro(self, item: Dict[str, Dict[str, Any]]) -> Optional[str]:
-        address: Dict[str, list[dict]] = item["address"]
+    def _metro(self, item: dict[str, dict[str, Any]]) -> Optional[str]:
+        address: dict[str, list[dict]] = item["address"]
         if isinstance(address, dict):
             metro: list[dict] = address["subways"]
             if metro:
                 return metro[0]["name"]
         return None
 
-    def _address(self, item: Dict[str, Any]) -> Optional[str]:
+    def _address(self, item: dict[str, Any]) -> Optional[str]:
         address = item.get("address")
         if isinstance(address, dict):
             return address.get("displayName")
         return None
 
-    def _building(self, item: Dict[str, Any]) -> Optional[str]:
+    def _building(self, item: dict[str, Any]) -> Optional[str]:
         building = item.get("building")
         if isinstance(building, dict):
             return building.get("name")
         return None
 
-    def _floor(self, item: Dict[str, Any]) -> Optional[str]:
+    def _floor(self, item: dict[str, Any]) -> Optional[str]:
         objectInfo: dict[str, float] = item["objectInfo"]
         floor = objectInfo.get("floor", 10)
         if floor is not None:
             return f"{floor}"
         return None
 
-    def _price(self, item: Dict[str, Any]) -> float:
+    def _price(self, item: dict[str, Any]) -> float:
         price = item.get("price")
         if isinstance(price, dict):
             return float(price.get("value", 0))
         return float(price or 0)
     
-    def _listing_url(self, item: Dict[str, Any]) -> Optional[str]:
+    def _listing_url(self, item: dict[str, Any]) -> Optional[str]:
         path = item.get("path")
         if path:
             return path
