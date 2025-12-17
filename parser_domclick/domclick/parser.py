@@ -10,9 +10,9 @@ class Parser:
 
     def __init__(self, response: Dict) -> None:
         self.response = response
+        self.logger = logging.getLogger(__name__)
 
     def to_offers(self) -> List[Offer]:
-        self.logger = logging.getLogger(__name__)
         items = self.response["result"].get("items", [])
         offers: List[Offer] = []
         self.logger.info(f"Appending offers.")
@@ -25,6 +25,20 @@ class Parser:
                 continue
 
         return offers
+    
+    def _pagination(self) -> Dict[str, Any]:
+        pagination = self.response["result"].get("pagination", {})
+        return pagination
+    
+    @property
+    def get_offset(self) -> int:
+        offset = self.response["result"]["pagination"]["offset"]
+        return offset
+    
+    @property
+    def get_total(self) -> int:
+        total = self.response["result"]["pagination"]["limit"]
+        return total
 
     def _item_to_offer(self, item: Dict) -> Offer:
         return Offer(
