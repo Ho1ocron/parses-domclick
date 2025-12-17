@@ -20,12 +20,14 @@ router = APIRouter(prefix="/v1", tags=["v1"])
 @router.get("/search", response_model=SearchResponse)
 async def search_offers(
     city: str = Query(..., description="Search city for Cian"),
-    price__gte: Optional[str] = Query(None, description="Minimum price filter"),
-    price__lte: Optional[str] = Query(None, description="Maximum price filter"),
-    area__gte: Optional[str] = Query(None, description="Minimum area in m²"),
-    area__lte: Optional[str] = Query(None, description="Maximum area in m²"),
+    price_gte: Optional[str] = Query(None, description="Minimum price filter"),
+    price_lte: Optional[str] = Query(None, description="Maximum price filter"),
+    area_gte: Optional[str] = Query(None, description="Minimum area in m²"),
+    area_lte: Optional[str] = Query(None, description="Maximum area in m²"),
     sale: Optional[bool] = Query(None, description="Sale or Rent"),
-    pages_number: Optional[int] = Query(None, description="Number of pages that we would look-up for in during parsing")
+    pages_number: int = Query(
+        5, description="Number of pages that we would look-up for in during parsing"
+    ),
 ) -> SearchResponse:
     """
     Main search endpoint.
@@ -44,12 +46,12 @@ async def search_offers(
         try:
             offers = browser.search(
                 city,
-                price__gte,
-                price__lte,
-                area__gte,
-                area__lte,
+                price_gte,
+                price_lte,
+                area_gte,
+                area_lte,
                 sale,
-                pages_number #type: ignore
+                pages_number,  # type: ignore
             )
 
         except ValueError:
