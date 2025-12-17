@@ -64,6 +64,7 @@ class DomClickBrowser:
         area_gte: Optional[str],
         area_lte: Optional[str],
         sale: Optional[bool],
+        offset: int = 0
     ) -> str:
         base_url = "https://bff-search-web.domclick.ru/api/offers/v1"
         # https://bff-search-web.domclick.ru/api/offers/count/v1?address=1d1463ae-c80f-4d19-9331-a1b68a85b553&limit=20&sort=qi&sort_dir=desc&deal_type=rent&category=commercial&offer_type=office&aids=2299&rent_price__gte=10&rent_price__lte=10000000&area__gte=10&area__lte=10000&floor__gte=1&floor__lte=10
@@ -72,6 +73,7 @@ class DomClickBrowser:
             "deal_type": "rent" if not sale else "sale",
             "offer_type": "office",
             "address": address,
+            "offset": offset,
         }
         self.logger.info(f"Additional params status: {price_gte}, {price_lte}")
         if price_gte:
