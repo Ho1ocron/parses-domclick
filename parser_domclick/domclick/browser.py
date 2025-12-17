@@ -113,6 +113,7 @@ class DomClickBrowser:
                 offers.append(parser.to_offers())
             else:
                 raise ValueError(f"Failed to fetch data from {url}")
+            time.sleep(0.5)
             
         return [offer for sublist in offers for offer in sublist]
 
