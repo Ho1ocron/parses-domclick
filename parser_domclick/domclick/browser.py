@@ -101,9 +101,10 @@ class DomClickBrowser:
         GEO_URL = "https://geo-service.domclick.ru/research/api/v1/autocomplete/regions"
         region_guid = self.httpx_client.get(GEO_URL, params={"name": address}).json()
         guid = region_guid["answer"]["items"][0]["guid"]
-        for i in range(4):
+        offset = 30 
+        for i in range(5):  # Fetch up to 5 pages
             url = self._construct_url(
-                guid, price_gte, price_lte, area_gte, area_lte, sale
+                guid, price_gte, price_lte, area_gte, area_lte, sale, offset=offset*i
             )
             response = self.httpx_client.get(url)
             if response.status_code == 200:
