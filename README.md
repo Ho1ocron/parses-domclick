@@ -1,4 +1,6 @@
-# Domclick Parser (parser-domclick)
+# Parser of Domclick (parser-domclick)
+
+[![CI](https://github.com/cursay/parser-domclick/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/cursay/parser-domclick/actions/workflows/ci.yml)
 
 Парсер объявлений с сайта domclick.ru на базе Selenium и FastAPI.
 
