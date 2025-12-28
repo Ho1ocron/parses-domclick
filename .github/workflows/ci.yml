@@ -26,13 +26,13 @@ jobs:
 
       - name: Run black (check)
         run: |
-          black --version || true
-          black . --check
+          python -m black --version || true
+          python -m black . --check
 
       - name: Run flake8
         run: |
-          flake8 --version || true
-          flake8 .
+          python -m flake8 --version || true
+          python -m flake8 .
 
       - name: Run tests
         run: |
